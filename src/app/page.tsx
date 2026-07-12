@@ -11,7 +11,7 @@ import Link from 'next/link';
 async function getLatestArticles() {
   const articles = await prisma.article.findMany({
     where: {
-      status: 'PUBLISHED',
+      isPublished: true,
       publishedAt: { not: null },
     },
     orderBy: { publishedAt: 'desc' },
