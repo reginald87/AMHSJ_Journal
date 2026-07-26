@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: amhsj
+      POSTGRES_PASSWORD: amhsj_dev_password
+      POSTGRES_DB: amhsj
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://amhsj:amhsj_dev_password@db:5432/amhsj"
+      NEXTAUTH_SECRET: "change-me-in-production"
+      NEXTAUTH_URL: "http://localhost:3000"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
