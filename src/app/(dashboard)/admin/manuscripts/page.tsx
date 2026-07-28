@@ -90,6 +90,7 @@ export default function AdminManuscriptsPage() {
 
   const [newManuscriptOpen, setNewManuscriptOpen] = useState(false);
   const [newMs, setNewMs] = useState({ title: '', abstract: '', keywords: '', articleType: 'ORIGINAL_RESEARCH', authorEmail: '', authorFirstName: '', authorLastName: '' });
+  const [manuscriptFile, setManuscriptFile] = useState<File | null>(null);
   const [creatingMs, setCreatingMs] = useState(false);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -221,23 +222,25 @@ export default function AdminManuscriptsPage() {
     }
     setCreatingMs(true);
     try {
+      const formData = new FormData();
+      formData.append('title', newMs.title);
+      formData.append('abstract', newMs.abstract);
+      formData.append('keywords', newMs.keywords);
+      formData.append('articleType', newMs.articleType);
+      if (newMs.authorEmail) formData.append('correspondingAuthorEmail', newMs.authorEmail);
+      if (newMs.authorFirstName) formData.append('correspondingAuthorFirstName', newMs.authorFirstName);
+      if (newMs.authorLastName) formData.append('correspondingAuthorLastName', newMs.authorLastName);
+      if (manuscriptFile) formData.append('manuscriptFile', manuscriptFile);
+
       const res = await fetch('/api/admin/manuscripts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newMs.title,
-          abstract: newMs.abstract,
-          keywords: newMs.keywords,
-          articleType: newMs.articleType,
-          correspondingAuthorEmail: newMs.authorEmail || undefined,
-          correspondingAuthorFirstName: newMs.authorFirstName || undefined,
-          correspondingAuthorLastName: newMs.authorLastName || undefined,
-        }),
+        body: formData,
       });
       if (res.ok) {
         toast.success('Manuscript created');
         setNewManuscriptOpen(false);
         setNewMs({ title: '', abstract: '', keywords: '', articleType: 'ORIGINAL_RESEARCH', authorEmail: '', authorFirstName: '', authorLastName: '' });
+        setManuscriptFile(null);
         fetchManuscripts();
       } else {
         const err = await res.json().catch(() => ({}));
@@ -623,6 +626,32 @@ export default function AdminManuscriptsPage() {
             <div>
               <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Keywords (comma-separated)</label>
               <Input value={newMs.keywords} onChange={e => setNewMs({...newMs, keywords: e.target.value})} placeholder="keyword1, keyword2, keyword3" />
+            </div>
+            <div>
+              <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Manuscript File (optional)</label>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">Upload PDF, DOC, or DOCX. You can also upload files later from the detail view.</p>
+              <div className="flex items-center gap-3">
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={(e) => setManuscriptFile(e.target.files?.[0] || null)}
+                  className="block w-full text-sm text-slate-600 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-navy-100 file:text-navy-700 dark:file:bg-navy-800 dark:file:text-navy-300 hover:file:bg-navy-200 dark:hover:file:bg-navy-700 cursor-pointer"
+                />
+                {manuscriptFile && (
+                  <button
+                    type="button"
+                    onClick={() => setManuscriptFile(null)}
+                    className="text-xs text-red-500 hover:text-red-600 whitespace-nowrap"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {manuscriptFile && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  {manuscriptFile.name} ({(manuscriptFile.size / 1024 / 1024).toFixed(1)} MB)
+                </p>
+              )}
             </div>
             <div className="border-t border-slate-200 dark:border-navy-700 pt-4">
               <p className="text-sm font-medium text-navy-900 dark:text-white mb-3">Corresponding Author (optional — leave empty to assign later)</p>

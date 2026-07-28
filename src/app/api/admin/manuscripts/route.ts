@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Prisma, ManuscriptStatus } from '@prisma/client';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
+import { existsSync } from 'fs';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminManuscripts');
@@ -71,8 +74,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { title, abstract, keywords, articleType, section, correspondingAuthorEmail, correspondingAuthorFirstName, correspondingAuthorLastName, status } = body;
+    const formData = await request.formData();
+
+    const title = formData.get('title') as string;
+    const abstract = formData.get('abstract') as string;
+    const keywords = formData.get('keywords') as string || '';
+    const articleType = formData.get('articleType') as string;
+    const section = formData.get('section') as string || null;
+    const correspondingAuthorEmail = formData.get('correspondingAuthorEmail') as string || undefined;
+    const correspondingAuthorFirstName = formData.get('correspondingAuthorFirstName') as string;
+    const correspondingAuthorLastName = formData.get('correspondingAuthorLastName') as string;
+    const status = formData.get('status') as string || undefined;
+    const manuscriptFile = formData.get('manuscriptFile') as File | null;
 
     if (!title || !abstract || !articleType) {
       return NextResponse.json({ error: 'Missing required fields: title, abstract, articleType' }, { status: 400 });
@@ -116,32 +129,84 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const manuscript = await prisma.manuscript.create({
-      data: {
-        journalId: journal.id,
-        title,
-        abstract,
-        keywords: typeof keywords === 'string' ? keywords : JSON.stringify(keywords || []),
-        articleType,
-        section: section || null,
-        status: (status as ManuscriptStatus) || 'SUBMITTED',
-        correspondingAuthorId: authorId,
-        submittedAt: new Date(),
-        authors: {
-          create: {
-            userId: authorId,
-            firstName: authorFirstName,
-            lastName: authorLastName,
-            email: authorEmail,
-            affiliation: authorAffiliation,
-            position: 0,
-            isCorresponding: true,
-          },
+    const uploadDir = join(process.cwd(), 'uploads', 'manuscripts');
+    if (!existsSync(uploadDir)) {
+      await mkdir(uploadDir, { recursive: true });
+    }
+
+    let manuscriptFileUrl = '';
+    let manuscriptFileName = '';
+    let manuscriptFileSize = 0;
+    let manuscriptFileMime = '';
+
+    if (manuscriptFile && manuscriptFile.size > 0) {
+      const bytes = await manuscriptFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const timestamp = Date.now();
+      const filename = `${timestamp}-${manuscriptFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const filepath = join(uploadDir, filename);
+      await writeFile(filepath, buffer);
+      manuscriptFileUrl = `/api/uploads/manuscripts/${filename}`;
+      manuscriptFileName = manuscriptFile.name;
+      manuscriptFileSize = buffer.length;
+      manuscriptFileMime = manuscriptFile.type;
+    }
+
+    const manuscriptData: Prisma.ManuscriptCreateInput = {
+      journal: { connect: { id: journal.id } },
+      title,
+      abstract,
+      keywords: typeof keywords === 'string' ? keywords : JSON.stringify(keywords || []),
+      articleType,
+      section: section || null,
+      status: (status as ManuscriptStatus) || 'SUBMITTED',
+      correspondingAuthor: { connect: { id: authorId } },
+      submittedAt: new Date(),
+      authors: {
+        create: {
+          userId: authorId,
+          firstName: authorFirstName,
+          lastName: authorLastName,
+          email: authorEmail,
+          affiliation: authorAffiliation,
+          position: 0,
+          isCorresponding: true,
         },
       },
+    };
+
+    if (manuscriptFileUrl) {
+      manuscriptData.files = {
+        create: {
+          fileName: manuscriptFileName,
+          fileUrl: manuscriptFileUrl,
+          fileSize: manuscriptFileSize,
+          mimeType: manuscriptFileMime || 'application/pdf',
+          fileType: 'MANUSCRIPT',
+          version: 1,
+          isPrimary: true,
+        },
+      };
+      manuscriptData.versions = {
+        create: {
+          version: 1,
+          title,
+          abstract,
+          keywords: typeof keywords === 'string' ? keywords : JSON.stringify(keywords || []),
+          fileUrl: manuscriptFileUrl,
+          fileName: manuscriptFileName,
+          fileSize: manuscriptFileSize,
+          submittedById: authorId,
+        },
+      };
+    }
+
+    const manuscript = await prisma.manuscript.create({
+      data: manuscriptData,
       include: {
         correspondingAuthor: { select: { firstName: true, lastName: true, email: true } },
         authors: true,
+        files: true,
       },
     });
 
