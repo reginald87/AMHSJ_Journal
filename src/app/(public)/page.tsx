@@ -90,7 +90,7 @@ async function getEditorialBoard() {
   const roles = await prisma.editorialRole.findMany({
     where: {
       isActive: true,
-      role: { in: ['EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR'] },
+      role: { in: ['EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR'] },
     },
     include: {
       user: {
@@ -102,23 +102,64 @@ async function getEditorialBoard() {
         },
       },
     },
-    orderBy: { role: 'asc' },
     take: 6,
   });
 
-  return roles.map((r) => {
-    const roleLabel: Record<string, string> = {
-      EDITOR_IN_CHIEF: 'Editor-in-Chief',
-      DEPUTY_EDITOR_IN_CHIEF: 'Deputy Editor-in-Chief',
-      ASSOCIATE_EDITOR: 'Associate Editor',
-    };
-    return {
+  const roleOrder: Record<string, number> = {
+    EDITOR_IN_CHIEF: 0,
+    DEPUTY_EDITOR_IN_CHIEF: 1,
+    ASSOCIATE_EDITOR: 2,
+    INTERNATIONAL_EDITOR: 3,
+  };
+
+  const roleLabel: Record<string, string> = {
+    EDITOR_IN_CHIEF: 'Editor-in-Chief',
+    DEPUTY_EDITOR_IN_CHIEF: 'Deputy Editor-in-Chief',
+    ASSOCIATE_EDITOR: 'Associate Editor',
+    INTERNATIONAL_EDITOR: 'International Editor',
+  };
+
+  return roles
+    .sort((a, b) => (roleOrder[a.role] ?? 99) - (roleOrder[b.role] ?? 99))
+    .map((r) => ({
       name: `${r.user.firstName} ${r.user.lastName}`,
       role: roleLabel[r.role] ?? r.role,
       affiliation: r.user.affiliation ?? '',
       specialty: r.user.department ?? '',
-    };
-  });
+    }));
+}
+
+async function getDynamicStats() {
+  const [publishedCount, authorCount, countryCount] = await Promise.all([
+    prisma.article.count({
+      where: {
+        isPublished: true,
+        publishedAt: { not: null },
+        OR: [
+          { manuscriptId: null },
+          { manuscript: { status: 'PUBLISHED' } },
+        ],
+      },
+    }),
+    prisma.manuscriptAuthor.findMany({
+      where: {
+        manuscript: { status: 'PUBLISHED' },
+      },
+      select: { email: true },
+      distinct: ['email'],
+    }),
+    prisma.user.findMany({
+      where: { country: { not: null } },
+      select: { country: true },
+      distinct: ['country'],
+    }),
+  ]);
+
+  return [
+    { value: String(publishedCount), label: 'Published Articles', icon: 'FileText' },
+    { value: authorCount.length >= 1000 ? `${(authorCount.length / 1000).toFixed(1)}k+` : String(authorCount.length), label: 'Active Authors', icon: 'Users' },
+    { value: String(countryCount.length), label: 'Countries Represented', icon: 'Globe' },
+  ];
 }
 
 const statsIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -126,22 +167,24 @@ const statsIcons: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 export default async function HomePage() {
-  const [journal, latestArticles, editorialBoard] = await Promise.all([
+  const [journal, latestArticles, editorialBoard, dynamicStats] = await Promise.all([
     getJournalData(),
     getLatestArticles(),
     getEditorialBoard(),
+    getDynamicStats(),
   ]);
 
   if (!journal) return null;
 
-  const stats: HeroStat[] = JSON.parse(journal.homepageStats || '[]');
+  const impactFactor = journal.heroImpactFactor || '2.5';
+  const stats: HeroStat[] = [
+    ...dynamicStats,
+    { value: impactFactor, label: 'Impact Factor', icon: 'Award' },
+  ];
   const features: Feature[] = JSON.parse(journal.homepageFeatures || '[]');
   const indexers: Indexer[] = JSON.parse(journal.homepageIndexers || '[]');
   const scopeAreas: string[] = JSON.parse(journal.scopeAreas || '[]');
   const heroSlides: CarouselSlide[] = JSON.parse(journal.heroCarousel || '[]');
-  
-  // If heroSlides is null/undefined/empty, try to use a fallback
-  const slidesToUse = heroSlides && heroSlides.length > 0 ? heroSlides : [];
  
    return (
      <div className="min-h-screen bg-white">
