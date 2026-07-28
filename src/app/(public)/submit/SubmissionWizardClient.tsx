@@ -343,19 +343,13 @@ export function SubmissionWizard() {
 
       const authors = meta.authors || [];
       if (authors.length > 0) {
-        const [first, ...rest] = authors;
-        if (first) {
-          setValue('correspondingAuthor', {
-            firstName: first.firstName,
-            lastName: first.lastName,
-            email: first.email || '',
-            affiliation: first.affiliation || '',
-          });
-          filled++;
-        }
-        if (rest.length > 0) {
+        if (authors.length === 1) {
+          if (authors[0].affiliation && !getValues('correspondingAuthor.affiliation')) {
+            setValue('correspondingAuthor.affiliation', authors[0].affiliation, { shouldValidate: false });
+          }
+        } else {
           replaceCoAuthors(
-            rest.map((a) => ({
+            authors.map((a) => ({
               firstName: a.firstName,
               lastName: a.lastName,
               email: a.email || '',
