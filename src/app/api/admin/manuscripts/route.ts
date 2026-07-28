@@ -84,13 +84,35 @@ export async function POST(request: NextRequest) {
     }
 
     let authorId = session.user.id;
+    let authorFirstName = correspondingAuthorFirstName || '';
+    let authorLastName = correspondingAuthorLastName || '';
+    let authorEmail = correspondingAuthorEmail || '';
+    let authorAffiliation = '';
 
     if (correspondingAuthorEmail) {
-      const existingUser = await prisma.user.findUnique({ where: { email: correspondingAuthorEmail } });
+      const existingUser = await prisma.user.findUnique({
+        where: { email: correspondingAuthorEmail },
+        select: { id: true, firstName: true, lastName: true, email: true, affiliation: true },
+      });
       if (existingUser) {
         authorId = existingUser.id;
+        authorFirstName = existingUser.firstName;
+        authorLastName = existingUser.lastName;
+        authorEmail = existingUser.email;
+        authorAffiliation = existingUser.affiliation || '';
       } else {
         return NextResponse.json({ error: `No user found with email "${correspondingAuthorEmail}". Create the user account first.` }, { status: 400 });
+      }
+    } else {
+      const adminUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { firstName: true, lastName: true, email: true, affiliation: true },
+      });
+      if (adminUser) {
+        authorFirstName = adminUser.firstName;
+        authorLastName = adminUser.lastName;
+        authorEmail = adminUser.email;
+        authorAffiliation = adminUser.affiliation || '';
       }
     }
 
@@ -105,9 +127,21 @@ export async function POST(request: NextRequest) {
         status: (status as ManuscriptStatus) || 'SUBMITTED',
         correspondingAuthorId: authorId,
         submittedAt: new Date(),
+        authors: {
+          create: {
+            userId: authorId,
+            firstName: authorFirstName,
+            lastName: authorLastName,
+            email: authorEmail,
+            affiliation: authorAffiliation,
+            position: 0,
+            isCorresponding: true,
+          },
+        },
       },
       include: {
         correspondingAuthor: { select: { firstName: true, lastName: true, email: true } },
+        authors: true,
       },
     });
 
