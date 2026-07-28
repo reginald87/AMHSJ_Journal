@@ -68,6 +68,10 @@ async function getLatestArticles() {
     where: {
       isPublished: true,
       publishedAt: { not: null },
+      OR: [
+        { manuscriptId: null },
+        { manuscript: { status: 'PUBLISHED' } },
+      ],
     },
     orderBy: { publishedAt: 'desc' },
     take: 6,
@@ -77,6 +81,7 @@ async function getLatestArticles() {
         orderBy: { position: 'asc' },
       },
       volume: { select: { number: true, year: true } },
+      manuscript: { select: { status: true } },
     },
   });
 }

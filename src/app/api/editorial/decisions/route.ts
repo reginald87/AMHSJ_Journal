@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     if (manuscript.status === 'PUBLISHED' && statusMap[decision] !== 'PUBLISHED') {
       await prisma.article.updateMany({
         where: { manuscriptId },
-        data: { isPublished: false },
+        data: { isPublished: false, publishedAt: null },
       });
     }
 

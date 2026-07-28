@@ -12,7 +12,14 @@ export const dynamic = 'force-dynamic';
 
 async function getArticles(): Promise<ArticleListItem[]> {
   const articles = await prisma.article.findMany({
-    where: { isPublished: true, publishedAt: { not: null } },
+    where: {
+      isPublished: true,
+      publishedAt: { not: null },
+      OR: [
+        { manuscriptId: null },
+        { manuscript: { status: 'PUBLISHED' } },
+      ],
+    },
     orderBy: { publishedAt: 'desc' },
     include: {
       authors: {

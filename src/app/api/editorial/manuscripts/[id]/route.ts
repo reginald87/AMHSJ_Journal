@@ -53,7 +53,7 @@ export async function PUT(
         if (manuscript.status === 'PUBLISHED' && status !== 'PUBLISHED') {
           await tx.article.updateMany({
             where: { manuscriptId: id },
-            data: { isPublished: false },
+            data: { isPublished: false, publishedAt: null },
           });
         }
 

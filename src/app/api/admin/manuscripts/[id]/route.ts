@@ -83,7 +83,7 @@ export async function PATCH(
         if (current.status === 'PUBLISHED' && status !== 'PUBLISHED') {
           await tx.article.updateMany({
             where: { manuscriptId: id },
-            data: { isPublished: false },
+            data: { isPublished: false, publishedAt: null },
           });
         }
       }
