@@ -50,6 +50,13 @@ export async function PUT(
       });
 
       if (statusChanged) {
+        if (manuscript.status === 'PUBLISHED' && status !== 'PUBLISHED') {
+          await tx.article.updateMany({
+            where: { manuscriptId: id },
+            data: { isPublished: false },
+          });
+        }
+
         const decisionMap: Record<string, string> = {
           ACCEPTED: 'ACCEPT',
           REJECTED: 'REJECT',

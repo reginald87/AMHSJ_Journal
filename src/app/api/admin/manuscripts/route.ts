@@ -63,3 +63,57 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch manuscripts' }, { status: 500 });
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { title, abstract, keywords, articleType, section, correspondingAuthorEmail, correspondingAuthorFirstName, correspondingAuthorLastName, status } = body;
+
+    if (!title || !abstract || !articleType) {
+      return NextResponse.json({ error: 'Missing required fields: title, abstract, articleType' }, { status: 400 });
+    }
+
+    const journal = await prisma.journal.findFirst({ where: { isActive: true } });
+    if (!journal) {
+      return NextResponse.json({ error: 'No active journal found' }, { status: 500 });
+    }
+
+    let authorId = session.user.id;
+
+    if (correspondingAuthorEmail) {
+      const existingUser = await prisma.user.findUnique({ where: { email: correspondingAuthorEmail } });
+      if (existingUser) {
+        authorId = existingUser.id;
+      } else {
+        return NextResponse.json({ error: `No user found with email "${correspondingAuthorEmail}". Create the user account first.` }, { status: 400 });
+      }
+    }
+
+    const manuscript = await prisma.manuscript.create({
+      data: {
+        journalId: journal.id,
+        title,
+        abstract,
+        keywords: typeof keywords === 'string' ? keywords : JSON.stringify(keywords || []),
+        articleType,
+        section: section || null,
+        status: (status as ManuscriptStatus) || 'SUBMITTED',
+        correspondingAuthorId: authorId,
+        submittedAt: new Date(),
+      },
+      include: {
+        correspondingAuthor: { select: { firstName: true, lastName: true, email: true } },
+      },
+    });
+
+    return NextResponse.json(manuscript, { status: 201 });
+  } catch (error) {
+    logger.error('Error creating manuscript', error);
+    return NextResponse.json({ error: 'Failed to create manuscript' }, { status: 500 });
+  }
+}

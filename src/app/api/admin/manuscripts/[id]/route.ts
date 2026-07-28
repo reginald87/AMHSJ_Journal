@@ -53,6 +53,11 @@ export async function PATCH(
     const body = await request.json();
     const { status, assignedEditorId, title, abstract, keywords, coverLetter } = body;
 
+    const current = await prisma.manuscript.findUnique({ where: { id }, select: { status: true } });
+    if (!current) {
+      return NextResponse.json({ error: 'Manuscript not found' }, { status: 404 });
+    }
+
     const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (assignedEditorId !== undefined) {
@@ -67,15 +72,71 @@ export async function PATCH(
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
-    const manuscript = await prisma.manuscript.update({
-      where: { id },
-      data: updateData,
-      select: { id: true, title: true, status: true, assignedEditorId: true, abstract: true, keywords: true, coverLetter: true },
+    const manuscript = await prisma.$transaction(async (tx) => {
+      const updated = await tx.manuscript.update({
+        where: { id },
+        data: updateData,
+        select: { id: true, title: true, status: true, assignedEditorId: true, abstract: true, keywords: true, coverLetter: true },
+      });
+
+      if (status && status !== current.status) {
+        if (current.status === 'PUBLISHED' && status !== 'PUBLISHED') {
+          await tx.article.updateMany({
+            where: { manuscriptId: id },
+            data: { isPublished: false },
+          });
+        }
+      }
+
+      return updated;
     });
 
     return NextResponse.json(manuscript);
   } catch (error) {
     logger.error('Error updating manuscript', error);
     return NextResponse.json({ error: 'Failed to update manuscript' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const manuscript = await prisma.manuscript.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+
+    if (!manuscript) {
+      return NextResponse.json({ error: 'Manuscript not found' }, { status: 404 });
+    }
+
+    if (manuscript.status === 'PUBLISHED') {
+      return NextResponse.json({ error: 'Cannot delete a published manuscript. Unpublish it first.' }, { status: 400 });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.review.deleteMany({ where: { manuscriptId: id } });
+      await tx.reviewInvitation.deleteMany({ where: { manuscriptId: id } });
+      await tx.editorialDecision.deleteMany({ where: { manuscriptId: id } });
+      await tx.editorialNote.deleteMany({ where: { manuscriptId: id } });
+      await tx.manuscriptVersion.deleteMany({ where: { manuscriptId: id } });
+      await tx.manuscriptFile.deleteMany({ where: { manuscriptId: id } });
+      await tx.manuscriptAuthor.deleteMany({ where: { manuscriptId: id } });
+      await tx.manuscript.delete({ where: { id } });
+    });
+
+    return NextResponse.json({ message: 'Manuscript deleted' });
+  } catch (error) {
+    logger.error('Error deleting manuscript', error);
+    return NextResponse.json({ error: 'Failed to delete manuscript' }, { status: 500 });
   }
 }

@@ -8,9 +8,20 @@ import { Input } from '@/components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
-import { Download, FileText, Send, Pencil } from 'lucide-react';
+import { Download, FileText, Send, Pencil, Trash2, Plus } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
+
+const ARTICLE_TYPES = [
+  { value: 'ORIGINAL_RESEARCH', label: 'Original Research' },
+  { value: 'REVIEW', label: 'Review Article' },
+  { value: 'CASE_REPORT', label: 'Case Report' },
+  { value: 'CASE_SERIES', label: 'Case Series' },
+  { value: 'SHORT_COMMUNICATION', label: 'Short Communication' },
+  { value: 'LETTER_TO_EDITOR', label: 'Letter to Editor' },
+  { value: 'COMMENTARY', label: 'Commentary' },
+  { value: 'EDITORIAL', label: 'Editorial' },
+];
 
 interface Manuscript {
   id: string;
@@ -76,6 +87,14 @@ export default function AdminManuscriptsPage() {
   const [publishedPdf, setPublishedPdf] = useState<File | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [publishDate, setPublishDate] = useState('');
+
+  const [newManuscriptOpen, setNewManuscriptOpen] = useState(false);
+  const [newMs, setNewMs] = useState({ title: '', abstract: '', keywords: '', articleType: 'ORIGINAL_RESEARCH', authorEmail: '', authorFirstName: '', authorLastName: '' });
+  const [creatingMs, setCreatingMs] = useState(false);
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletingMs, setDeletingMs] = useState<Manuscript | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchManuscripts = async () => {
     try {
@@ -195,6 +214,63 @@ export default function AdminManuscriptsPage() {
     }
   };
 
+  const handleCreateManuscript = async () => {
+    if (!newMs.title.trim() || !newMs.abstract.trim()) {
+      toast.error('Title and abstract are required');
+      return;
+    }
+    setCreatingMs(true);
+    try {
+      const res = await fetch('/api/admin/manuscripts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newMs.title,
+          abstract: newMs.abstract,
+          keywords: newMs.keywords,
+          articleType: newMs.articleType,
+          correspondingAuthorEmail: newMs.authorEmail || undefined,
+          correspondingAuthorFirstName: newMs.authorFirstName || undefined,
+          correspondingAuthorLastName: newMs.authorLastName || undefined,
+        }),
+      });
+      if (res.ok) {
+        toast.success('Manuscript created');
+        setNewManuscriptOpen(false);
+        setNewMs({ title: '', abstract: '', keywords: '', articleType: 'ORIGINAL_RESEARCH', authorEmail: '', authorFirstName: '', authorLastName: '' });
+        fetchManuscripts();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || 'Failed to create manuscript');
+      }
+    } catch {
+      toast.error('Failed to create manuscript');
+    } finally {
+      setCreatingMs(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingMs) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/manuscripts/${deletingMs.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success('Manuscript deleted');
+        setDeleteOpen(false);
+        setDeletingMs(null);
+        fetchManuscripts();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || 'Failed to delete manuscript');
+      }
+    } catch {
+      toast.error('Failed to delete manuscript');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const filtered = manuscripts.filter(m => {
     if (filter !== 'all' && m.status !== filter) return false;
     if (search) {
@@ -212,6 +288,9 @@ export default function AdminManuscriptsPage() {
           <p className="text-slate-600 dark:text-slate-400 mt-1">Manage manuscript submissions and editorial workflow</p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button variant="gold" size="sm" onClick={() => setNewManuscriptOpen(true)}>
+            <Plus className="w-4 h-4 mr-1" /> New Manuscript
+          </Button>
           <Select value={filter} onValueChange={setFilter}>
             <SelectTrigger className="w-[180px]"><SelectValue placeholder="All Status" /></SelectTrigger>
             <SelectContent>
@@ -275,6 +354,11 @@ export default function AdminManuscriptsPage() {
                         {m.status === 'ACCEPTED' && (
                            <Button variant="ghost" size="icon" onClick={() => openPublish(m)} title="Publish to Volume">
                             <Send className="w-4 h-4 text-green-600" />
+                          </Button>
+                        )}
+                        {m.status !== 'PUBLISHED' && (
+                          <Button variant="ghost" size="icon" onClick={() => { setDeletingMs(m); setDeleteOpen(true); }} title="Delete">
+                            <Trash2 className="w-4 h-4 text-red-500" />
                           </Button>
                         )}
                       </div>
@@ -479,6 +563,81 @@ export default function AdminManuscriptsPage() {
             <Button onClick={handlePublish} loading={publishing} variant="gold">
               <Send className="w-4 h-4 mr-2" /> Publish Article
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Manuscript</DialogTitle>
+          </DialogHeader>
+          {deletingMs && (
+            <div className="p-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Are you sure you want to delete <span className="font-medium text-navy-900 dark:text-white">"{deletingMs.title}"</span>?
+                This action cannot be undone.
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete} loading={deleting}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Manuscript Dialog */}
+      <Dialog open={newManuscriptOpen} onOpenChange={setNewManuscriptOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Manuscript</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-4">
+            <div>
+              <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Title *</label>
+              <Input value={newMs.title} onChange={e => setNewMs({...newMs, title: e.target.value})} placeholder="Manuscript title" />
+            </div>
+            <div>
+              <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Abstract *</label>
+              <textarea
+                value={newMs.abstract}
+                onChange={e => setNewMs({...newMs, abstract: e.target.value})}
+                rows={4}
+                placeholder="Manuscript abstract"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-navy-700 dark:bg-navy-900 dark:text-slate-100 resize-y"
+              />
+            </div>
+            <div>
+              <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Article Type</label>
+              <Select value={newMs.articleType} onValueChange={v => setNewMs({...newMs, articleType: v})}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ARTICLE_TYPES.map(t => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Keywords (comma-separated)</label>
+              <Input value={newMs.keywords} onChange={e => setNewMs({...newMs, keywords: e.target.value})} placeholder="keyword1, keyword2, keyword3" />
+            </div>
+            <div className="border-t border-slate-200 dark:border-navy-700 pt-4">
+              <p className="text-sm font-medium text-navy-900 dark:text-white mb-3">Corresponding Author (optional — leave empty to assign later)</p>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="First Name" value={newMs.authorFirstName} onChange={e => setNewMs({...newMs, authorFirstName: e.target.value})} placeholder="John" />
+                <Input label="Last Name" value={newMs.authorLastName} onChange={e => setNewMs({...newMs, authorLastName: e.target.value})} placeholder="Doe" />
+              </div>
+              <div className="mt-4">
+                <Input label="Email" type="email" value={newMs.authorEmail} onChange={e => setNewMs({...newMs, authorEmail: e.target.value})} placeholder="author@example.com" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewManuscriptOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateManuscript} loading={creatingMs}>Create Manuscript</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
