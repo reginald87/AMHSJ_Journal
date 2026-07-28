@@ -114,11 +114,11 @@ export default function AdminSettingsPage() {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-navy-900 dark:text-white mb-2">Journal Logo</label>
-                <ImageUpload value={settings.logo} onChange={(url) => setSettings({...settings, logo: url})} />
+                <ImageUpload value={settings.logo} onChange={(url) => setSettings({...settings, logo: url})} folder="settings" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-navy-900 dark:text-white mb-2">Cover Image</label>
-                <ImageUpload value={settings.coverImage} onChange={(url) => setSettings({...settings, coverImage: url})} />
+                <ImageUpload value={settings.coverImage} onChange={(url) => setSettings({...settings, coverImage: url})} folder="settings" />
               </div>
             </div>
           </CardContent>

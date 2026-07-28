@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -154,7 +155,12 @@ export default function AdminHomepagePage() {
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-                <Input label="Image URL" value={slide.image} onChange={e => updateSlide(i, 'image', e.target.value)} placeholder="https://images.unsplash.com/..." />
+                <ImageUpload
+                  label="Slide Image"
+                  value={slide.image}
+                  onChange={(url) => updateSlide(i, 'image', url)}
+                  folder="carousel"
+                />
                 <Input label="Title" value={slide.title} onChange={e => updateSlide(i, 'title', e.target.value)} />
                 <Textarea label="Subtitle" value={slide.subtitle} onChange={e => updateSlide(i, 'subtitle', e.target.value)} rows={2} />
                 <div className="grid grid-cols-2 gap-4">

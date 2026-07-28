@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
-import { Eye, Download, FileText, Send } from 'lucide-react';
+import { Download, FileText, Send, Pencil } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -61,6 +61,9 @@ export default function AdminManuscriptsPage() {
   const [selected, setSelected] = useState<Manuscript | null>(null);
   const [newStatus, setNewStatus] = useState('');
   const [assignedEditorId, setAssignedEditorId] = useState('');
+  const [editTitle, setEditTitle] = useState('');
+  const [editAbstract, setEditAbstract] = useState('');
+  const [editKeywords, setEditKeywords] = useState('');
   const [editors, setEditors] = useState<Editor[]>([]);
   const [detailSaving, setDetailSaving] = useState(false);
 
@@ -108,6 +111,9 @@ export default function AdminManuscriptsPage() {
     setSelected(ms);
     setNewStatus(ms.status || 'SUBMITTED');
     setAssignedEditorId(ms.assignedEditorId || '');
+    setEditTitle(ms.title || '');
+    setEditAbstract(ms.abstract || '');
+    setEditKeywords(ms.keywords || '');
     setDetailOpen(true);
     fetchEditors();
   };
@@ -128,10 +134,15 @@ export default function AdminManuscriptsPage() {
     if (!selected) return;
     setDetailSaving(true);
     try {
-      const body: Record<string, string> = { status: newStatus };
+      const body: Record<string, string> = {
+        status: newStatus,
+        title: editTitle,
+        abstract: editAbstract,
+        keywords: editKeywords,
+      };
       if (assignedEditorId) body.assignedEditorId = assignedEditorId;
       const res = await fetch(`/api/admin/manuscripts/${selected.id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
@@ -258,8 +269,8 @@ export default function AdminManuscriptsPage() {
                     <TableCell className="text-sm text-slate-600 dark:text-slate-400">{formatDate(m.submittedAt)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openDetail(m)}>
-                          <Eye className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" onClick={() => openDetail(m)} title="View / Edit">
+                          <Pencil className="w-4 h-4" />
                         </Button>
                         {m.status === 'ACCEPTED' && (
                            <Button variant="ghost" size="icon" onClick={() => openPublish(m)} title="Publish to Volume">
@@ -286,8 +297,8 @@ export default function AdminManuscriptsPage() {
             <div className="space-y-4 p-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-medium text-slate-500 dark:text-slate-400">Title</span>
-                  <p className="text-navy-900 dark:text-white mt-1">{selected.title}</p>
+                  <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Title</label>
+                  <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} />
                 </div>
                 <div>
                   <span className="font-medium text-slate-500 dark:text-slate-400">Author</span>
@@ -302,12 +313,19 @@ export default function AdminManuscriptsPage() {
                   <p className="text-navy-900 dark:text-white mt-1">{formatDate(selected.submittedAt)}</p>
                 </div>
               </div>
-              {selected.abstract && (
-                <div>
-                  <span className="font-medium text-slate-500 dark:text-slate-400 text-sm">Abstract</span>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 mt-1 whitespace-pre-wrap">{selected.abstract}</p>
-                </div>
-              )}
+              <div>
+                <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Abstract</label>
+                <textarea
+                  value={editAbstract}
+                  onChange={e => setEditAbstract(e.target.value)}
+                  rows={4}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-navy-700 dark:bg-navy-900 dark:text-slate-100 resize-y"
+                />
+              </div>
+              <div>
+                <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Keywords (comma-separated)</label>
+                <Input value={editKeywords} onChange={e => setEditKeywords(e.target.value)} placeholder="keyword1, keyword2, keyword3" />
+              </div>
               {selected.files && selected.files.length > 0 && (
                 <div>
                   <span className="font-medium text-slate-500 dark:text-slate-400 text-sm">Uploaded Files</span>

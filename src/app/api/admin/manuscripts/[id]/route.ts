@@ -51,13 +51,17 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { status, assignedEditorId } = body;
+    const { status, assignedEditorId, title, abstract, keywords, coverLetter } = body;
 
     const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (assignedEditorId !== undefined) {
       updateData.assignedEditorId = assignedEditorId || null;
     }
+    if (title !== undefined) updateData.title = title;
+    if (abstract !== undefined) updateData.abstract = abstract;
+    if (keywords !== undefined) updateData.keywords = typeof keywords === 'string' ? keywords : JSON.stringify(keywords);
+    if (coverLetter !== undefined) updateData.coverLetter = coverLetter;
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
@@ -66,7 +70,7 @@ export async function PATCH(
     const manuscript = await prisma.manuscript.update({
       where: { id },
       data: updateData,
-      select: { id: true, title: true, status: true, assignedEditorId: true },
+      select: { id: true, title: true, status: true, assignedEditorId: true, abstract: true, keywords: true, coverLetter: true },
     });
 
     return NextResponse.json(manuscript);

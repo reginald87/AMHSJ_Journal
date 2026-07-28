@@ -11,10 +11,11 @@ interface ImageUploadProps {
   label?: string;
   accept?: string;
   maxSizeMB?: number;
+  folder?: string;
   className?: string;
 }
 
-export function ImageUpload({ value, onChange, label = 'Image', accept = 'image/*', maxSizeMB = 10, className }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, label = 'Image', accept = 'image/*', maxSizeMB = 10, folder = 'carousel', className }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,19 +36,30 @@ export function ImageUpload({ value, onChange, label = 'Image', accept = 'image/
     setUploading(true);
 
     try {
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setPreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
 
-      // In a real app, you would upload to your server/cloud storage here
-      // For now, we'll just use the preview as the value
-      await new Promise(resolve => setTimeout(resolve, 500));
-      onChange(preview || URL.createObjectURL(file));
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', folder);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Upload failed');
+      }
+
+      const data = await res.json();
+      onChange(data.url);
     } catch (err) {
-      setError('Failed to upload image');
+      setError(err instanceof Error ? err.message : 'Failed to upload image');
       console.error('Image upload error:', err);
     } finally {
       setUploading(false);
