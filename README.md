@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AMHSJ — Annals of Medical & Health Sciences Journal
 
-## Getting Started
+Academic journal management system built with Next.js 16, Prisma (SQLite), and NextAuth.js.
 
-First, run the development server:
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Database**: SQLite via Prisma
+- **Auth**: NextAuth.js (Credentials)
+- **Email**: Nodemailer (SMTP)
+- **UI**: Tailwind CSS 4, custom components
+- **File storage**: Local filesystem (`uploads/`)
+
+## Local Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env
+# Edit .env with your values
+
+# Push schema to SQLite
+npx prisma db push
+
+# Seed data (optional)
+npx tsx prisma/seed.ts
+
+# Create admin account
+npx tsx prisma/create-admin.ts
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment (cPanel — Node.js Selector)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Clone repository
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+In cPanel **Terminal** or via **Git Version Control**:
 
-## Learn More
+```bash
+cd ~/repositories  # or wherever you keep apps
+git clone https://github.com/reginald87/AMHSJ_Journal.git
+cd AMHSJ_Journal
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Set up Node.js app
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+In cPanel **Node.js Selector**:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Setting | Value |
+|---|---|
+| Application mode | `Production` |
+| Application root | path to `AMHSJ_Journal` |
+| Application URL | your domain |
+| Application startup file | `server.js` (see below) |
+| Pass startup arguments | leave blank |
 
-## Deploy on Vercel
+### 3. Environment variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+In the Node.js app settings, add:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Variable | Value |
+|---|---|
+| `NODE_ENV` | `production` |
+| `DATABASE_URL` | `file:./prod.db` |
+| `NEXTAUTH_SECRET` | a random 64-character string |
+| `NEXTAUTH_URL` | `https://yourdomain.com` |
+| `ADMIN_EMAIL` | your email |
+| `ADMIN_PASSWORD` | a strong password |
+| `EMAIL_SERVER_HOST` | your SMTP host |
+| `EMAIL_SERVER_PORT` | `587` |
+| `EMAIL_SERVER_USER` | SMTP username |
+| `EMAIL_SERVER_PASSWORD` | SMTP password |
+| `EMAIL_FROM` | `noreply@yourdomain.com` |
+
+### 4. Install & build
+
+In Terminal or via the Node.js app's **Run npm** button:
+
+```bash
+npm install
+npx prisma db push
+npm run build
+```
+
+### 5. Create admin account
+
+```bash
+npx tsx prisma/create-admin.ts
+```
+
+### 6. Set file permissions
+
+Ensure the following directories are writable by the web server:
+
+```bash
+chmod 755 uploads
+# The SQLite DB file will be created inside the project root
+```
+
+### 7. Create startup file
+
+If your cPanel requires a `.js` startup file, create `server.js` in the project root:
+
+```js
+const { spawn } = require('child_process');
+const next = spawn('npx', ['next', 'start', '-p', process.env.PORT || 3000], {
+  stdio: 'inherit',
+  shell: true,
+});
+process.on('SIGTERM', () => next.kill());
+```
+
+Then set **Application startup file** to `server.js`.
+
+### 8. Restart app
+
+Use the **Restart** button in the Node.js Selector.
+
+## Folder structure
+
+```
+├── prisma/            # Schema, migrations, seeds
+├── public/            # Static assets
+├── uploads/           # User-uploaded files (manuscripts, images)
+├── src/
+│   ├── app/           # Next.js App Router pages & API routes
+│   ├── components/    # Shared UI components
+│   └── lib/           # Utilities, auth, email, logger
+└── package.json
+```
