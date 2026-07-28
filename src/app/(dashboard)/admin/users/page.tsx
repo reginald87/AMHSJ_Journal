@@ -208,6 +208,7 @@ export default function AdminUsersPage() {
               <SelectItem value="AUTHOR">Authors</SelectItem>
               <SelectItem value="REVIEWER">Reviewers</SelectItem>
               <SelectItem value="EDITOR">Editors</SelectItem>
+              <SelectItem value="EDITOR_ASSISTANT">Editor Assistants</SelectItem>
               <SelectItem value="ADMIN">Admins</SelectItem>
             </SelectContent>
           </Select>
@@ -251,6 +252,7 @@ export default function AdminUsersPage() {
                           <SelectItem value="AUTHOR">Author</SelectItem>
                           <SelectItem value="REVIEWER">Reviewer</SelectItem>
                           <SelectItem value="EDITOR">Editor</SelectItem>
+                          <SelectItem value="EDITOR_ASSISTANT">Editor Assistant</SelectItem>
                           <SelectItem value="ADMIN">Admin</SelectItem>
                         </SelectContent>
                       </Select>
@@ -345,6 +347,7 @@ export default function AdminUsersPage() {
                     <SelectItem value="EDITOR_IN_CHIEF">Editor-in-Chief</SelectItem>
                     <SelectItem value="DEPUTY_EDITOR_IN_CHIEF">Deputy Editor-in-Chief</SelectItem>
                     <SelectItem value="ASSOCIATE_EDITOR">Associate Editor</SelectItem>
+                    <SelectItem value="EDITOR_ASSISTANT">Editor Assistant</SelectItem>
                     <SelectItem value="ADMIN">Admin</SelectItem>
                   </SelectContent>
                 </Select>

@@ -152,6 +152,8 @@ model JournalSetting {
   autoAssignReviewers     Boolean  @default(false)
   enableORCID             Boolean  @default(true)
   enableORCIDAutoFill     Boolean  @default(false)
+  referenceStyle          String   @default("VANCOUVER")
+  manuscriptTemplate      String?
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
   journal                 Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
@@ -503,6 +505,23 @@ model Announcement {
   @@index([journalId])
 }
 
+model ContactMessage {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String
+  affiliation String?
+  subject     String
+  message     String
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+  repliedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([isRead])
+  @@index([createdAt])
+}
+
 model Notification {
   id        String    @id @default(cuid())
   userId    String
@@ -528,6 +547,7 @@ enum Role {
   DEPUTY_EDITOR_IN_CHIEF
   ASSOCIATE_EDITOR
   INTERNATIONAL_EDITOR
+  EDITOR_ASSISTANT
 }
 
 enum ManuscriptStatus {

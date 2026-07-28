@@ -33,15 +33,29 @@ export function Navbar() {
     { href: '/submit', label: 'New Submission', icon: FileText },
   ];
 
+  const adminNavItems = [
+    { href: '/admin', label: 'Admin Dashboard', icon: LayoutDashboard },
+    { href: '/admin/manuscripts', label: 'Manuscripts', icon: FileText },
+    { href: '/admin/editorial-board', label: 'Editorial Board', icon: Users },
+    { href: '/admin/settings', label: 'Settings', icon: LayoutDashboard },
+  ];
+
   const editorNavItems = [
-    { href: '/dashboard/editorial', label: 'Editorial Dashboard', icon: LayoutDashboard },
-    { href: '/dashboard/manuscripts', label: 'All Manuscripts', icon: FileText },
-    { href: '/dashboard/review', label: 'Review Management', icon: Users },
+    { href: '/editor', label: 'Editor Dashboard', icon: LayoutDashboard },
+    { href: '/editor/manuscripts', label: 'Manuscripts', icon: FileText },
+    { href: '/editor/reviewers', label: 'Reviewers', icon: Users },
   ];
 
   const reviewerNavItems = [
-    { href: '/dashboard/review', label: 'My Reviews', icon: FileText },
-    { href: '/dashboard/profile', label: 'Profile', icon: User },
+    { href: '/reviewer', label: 'Reviewer Dashboard', icon: LayoutDashboard },
+    { href: '/reviewer/assigned', label: 'Assigned Reviews', icon: FileText },
+    { href: '/reviewer/history', label: 'Review History', icon: FileText },
+  ];
+
+  const editorAssistantNavItems = [
+    { href: '/editor-assistant', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/editor-assistant/manuscripts', label: 'Manuscripts', icon: FileText },
+    { href: '/editor-assistant/publish', label: 'Publish', icon: FileText },
   ];
 
   if (status === 'loading') {
@@ -178,13 +192,25 @@ export function Navbar() {
                           {item.label}
                         </Link>
                       ))}
-                      {['EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'ADMIN'].includes(session.user?.role || '') && editorNavItems.map((item) => (
+                      {['ADMIN', 'EDITOR_IN_CHIEF'].includes(session.user?.role || '') && adminNavItems.map((item) => (
+                        <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white" onClick={() => setUserMenuOpen(false)}>
+                          <item.icon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      ))}
+                      {['EDITOR', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR'].includes(session.user?.role || '') && editorNavItems.map((item) => (
                         <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white" onClick={() => setUserMenuOpen(false)}>
                           <item.icon className="w-4 h-4" />
                           {item.label}
                         </Link>
                       ))}
                       {session.user?.role === 'REVIEWER' && reviewerNavItems.map((item) => (
+                        <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white" onClick={() => setUserMenuOpen(false)}>
+                          <item.icon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      ))}
+                      {session.user?.role === 'EDITOR_ASSISTANT' && editorAssistantNavItems.map((item) => (
                         <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white" onClick={() => setUserMenuOpen(false)}>
                           <item.icon className="w-4 h-4" />
                           {item.label}
@@ -273,12 +299,22 @@ export function Navbar() {
                     <item.icon className="w-4 h-4" /> {item.label}
                   </Link>
                 ))}
-                {['EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'ADMIN'].includes(session.user?.role || '') && editorNavItems.map((item) => (
+                {['ADMIN', 'EDITOR_IN_CHIEF'].includes(session.user?.role || '') && adminNavItems.map((item) => (
+                  <Link key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <item.icon className="w-4 h-4" /> {item.label}
+                  </Link>
+                ))}
+                {['EDITOR', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR'].includes(session.user?.role || '') && editorNavItems.map((item) => (
                   <Link key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                     <item.icon className="w-4 h-4" /> {item.label}
                   </Link>
                 ))}
                 {session.user?.role === 'REVIEWER' && reviewerNavItems.map((item) => (
+                  <Link key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <item.icon className="w-4 h-4" /> {item.label}
+                  </Link>
+                ))}
+                {session.user?.role === 'EDITOR_ASSISTANT' && editorAssistantNavItems.map((item) => (
                   <Link key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                     <item.icon className="w-4 h-4" /> {item.label}
                   </Link>

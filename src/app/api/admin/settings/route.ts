@@ -42,6 +42,8 @@ export async function GET() {
       reviewDeadlineDays: journal.settings?.reviewDeadlineDays ?? 21,
       maxReviewers: journal.settings?.maxReviewers ?? 3,
       enableORCID: journal.settings?.enableORCID ?? true,
+      referenceStyle: journal.settings?.referenceStyle ?? 'VANCOUVER',
+      manuscriptTemplate: journal.settings?.manuscriptTemplate ?? '',
     });
   } catch (error) {
     logger.error('Error fetching settings', error);
@@ -94,6 +96,8 @@ export async function PUT(request: NextRequest) {
         reviewDeadlineDays: body.reviewDeadlineDays ?? 21,
         maxReviewers: body.maxReviewers ?? 3,
         enableORCID: body.enableORCID ?? true,
+        referenceStyle: body.referenceStyle ?? 'VANCOUVER',
+        manuscriptTemplate: body.manuscriptTemplate ?? null,
       },
       update: {
         submissionOpen: body.submissionOpen ?? true,
@@ -103,6 +107,8 @@ export async function PUT(request: NextRequest) {
         reviewDeadlineDays: body.reviewDeadlineDays ?? 21,
         maxReviewers: body.maxReviewers ?? 3,
         enableORCID: body.enableORCID ?? true,
+        referenceStyle: body.referenceStyle ?? 'VANCOUVER',
+        manuscriptTemplate: body.manuscriptTemplate ?? null,
       },
     });
 

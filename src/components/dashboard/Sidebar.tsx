@@ -21,6 +21,7 @@ import {
   Shield,
   Bell,
   BarChart3,
+  Mail,
 } from 'lucide-react';
 import { ExtendedSession } from '@/lib/auth';
 
@@ -79,6 +80,7 @@ export function Sidebar({ isOpen, onClose, collapsed, onToggleCollapse }: Sideba
       label: 'Administration',
       items: [
         { href: '/admin/users', label: 'Users', icon: <Users className="w-5 h-5" /> },
+        { href: '/admin/messages', label: 'Messages', icon: <Mail className="w-5 h-5" /> },
         { href: '/admin/analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
         { href: '/admin/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
         { href: '/dashboard/notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" /> },
@@ -99,6 +101,7 @@ export function Sidebar({ isOpen, onClose, collapsed, onToggleCollapse }: Sideba
         { href: '/editor/manuscripts', label: 'Manuscripts', icon: <FileText className="w-5 h-5" /> },
         { href: '/editor/reviewers', label: 'Reviewers', icon: <Users className="w-5 h-5" /> },
         { href: '/editor/volumes', label: 'Volumes', icon: <BookOpen className="w-5 h-5" /> },
+        { href: '/editor/messages', label: 'Messages', icon: <Mail className="w-5 h-5" /> },
         { href: '/dashboard/notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" /> },
       ],
     },
@@ -129,11 +132,29 @@ export function Sidebar({ isOpen, onClose, collapsed, onToggleCollapse }: Sideba
     },
   ];
 
+  const editorAssistantGroups: NavGroup[] = [
+    {
+      label: 'Overview',
+      items: [
+        { href: '/editor-assistant', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+      ],
+    },
+    {
+      label: 'Publishing',
+      items: [
+        { href: '/editor-assistant/manuscripts', label: 'Manuscripts', icon: <FileText className="w-5 h-5" /> },
+        { href: '/editor-assistant/publish', label: 'Publish', icon: <BookOpen className="w-5 h-5" /> },
+        { href: '/dashboard/notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" /> },
+      ],
+    },
+  ];
+
   const getGroups = (): NavGroup[] => {
     const role = session?.user?.role || 'AUTHOR';
     if (['ADMIN', 'EDITOR_IN_CHIEF'].includes(role)) return adminGroups;
     if (['EDITOR', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR'].includes(role)) return editorGroups;
     if (role === 'REVIEWER') return reviewerGroups;
+    if (role === 'EDITOR_ASSISTANT') return editorAssistantGroups;
     return authorGroups;
   };
 

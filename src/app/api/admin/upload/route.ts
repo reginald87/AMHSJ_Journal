@@ -8,7 +8,12 @@ import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminUpload');
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+const DOC_TYPES = [
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/pdf',
+];
 const MAX_SIZE = 10 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
@@ -26,15 +31,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json({ error: 'File must be an image (JPEG, PNG, GIF, WebP, or SVG)' }, { status: 400 });
+    const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
+    const isTemplate = safeFolder === 'templates';
+    const allowedTypes = isTemplate ? [...IMAGE_TYPES, ...DOC_TYPES] : IMAGE_TYPES;
+
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: isTemplate ? 'File must be DOC, DOCX, PDF, or an image' : 'File must be an image (JPEG, PNG, GIF, WebP, or SVG)' },
+        { status: 400 },
+      );
     }
 
     if (file.size > MAX_SIZE) {
       return NextResponse.json({ error: 'File must be less than 10MB' }, { status: 400 });
     }
 
-    const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
     const uploadDir = join(process.cwd(), 'uploads', safeFolder);
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });

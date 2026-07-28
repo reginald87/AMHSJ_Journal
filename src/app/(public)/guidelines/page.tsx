@@ -15,7 +15,7 @@ const articleTypes = [
     description: 'Reports of original research',
     wordLimit: '3000 words max',
     abstract: '300 words max',
-    references: 'APA format',
+    references: 'Vancouver format',
     figures: '250 words each',
   },
   {
@@ -23,7 +23,7 @@ const articleTypes = [
     description: 'Comprehensive reviews',
     wordLimit: '3500 words max',
     abstract: '300 words max',
-    references: 'APA format',
+    references: 'Vancouver format',
     figures: '250 words each',
   },
   {
@@ -31,7 +31,7 @@ const articleTypes = [
     description: 'Clinical case reports',
     wordLimit: '800 words max',
     abstract: '300 words max',
-    references: 'APA format',
+    references: 'Vancouver format',
     figures: '250 words each',
   },
   {
@@ -39,7 +39,7 @@ const articleTypes = [
     description: 'Brief communications',
     wordLimit: 'As appropriate',
     abstract: 'Not required',
-    references: 'APA format',
+    references: 'Vancouver format',
     figures: 'Minimal',
   },
 ];
@@ -63,7 +63,7 @@ const peerReviewCriteria = [
   },
   {
     title: 'Discussion & References',
-    items: ['Are key findings clearly stated?', 'Are differences with other studies discussed?', 'Are implications clearly explained?', 'Are references appropriate and up-to-date?', 'Do references follow APA style?', 'Any important references missing?'],
+    items: ['Are key findings clearly stated?', 'Are differences with other studies discussed?', 'Are implications clearly explained?', 'Are references appropriate and up-to-date?', 'Do references follow Vancouver style?', 'Any important references missing?'],
   },
   {
     title: 'Ethics & Quality',
@@ -255,7 +255,7 @@ export default function GuidelinesPage() {
                 <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" /> Single column format using Microsoft Word</li>
                 <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" /> Pages numbered consecutively</li>
                 <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" /> Word count provided (excluding references, tables, legends)</li>
-                <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" /> References in APA format</li>
+                <li className="flex items-start gap-2"><CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" /> References in Vancouver format</li>
               </ul>
             </div>
 
@@ -376,7 +376,7 @@ export default function GuidelinesPage() {
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-200 dark:border-navy-700">
                   <span className="text-slate-500 dark:text-slate-400">Reference Style</span>
-                  <span className="font-medium text-navy-900 dark:text-white">APA format</span>
+                  <span className="font-medium text-navy-900 dark:text-white">Vancouver format</span>
                 </div>
               </div>
             </div>

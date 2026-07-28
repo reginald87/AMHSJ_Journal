@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const allowedRoles = ['AUTHOR', 'REVIEWER', 'EDITOR', 'ADMIN', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR'];
+    const allowedRoles = ['AUTHOR', 'REVIEWER', 'EDITOR', 'ADMIN', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'EDITOR_ASSISTANT'];
     const userRole = allowedRoles.includes(role) ? role : 'AUTHOR';
 
     const user = await prisma.user.create({

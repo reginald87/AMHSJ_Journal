@@ -1,25 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { toast } from 'sonner';
+import { Upload, FileText, Loader2, Trash2 } from 'lucide-react';
 
 const defaultSettings = {
   journalName: '', shortName: '', issnPrint: '', issnOnline: '', doiPrefix: '',
   description: '', scope: '', aims: '', website: '', email: '', logo: '', coverImage: '',
   submissionOpen: true, requireCoverLetter: true, requireEthicsApproval: true,
   reviewType: 'DOUBLE_BLIND', reviewDeadlineDays: 21, maxReviewers: 3,
-  enableORCID: true,
+  enableORCID: true, referenceStyle: 'VANCOUVER', manuscriptTemplate: '',
 };
 
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [settings, setSettings] = useState(defaultSettings);
+  const [templateUploading, setTemplateUploading] = useState(false);
+  const templateInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch('/api/admin/settings')
@@ -46,6 +49,40 @@ export default function AdminSettingsPage() {
     } catch { toast.error('Failed to save settings'); }
     finally { setLoading(false); }
   };
+
+  const handleTemplateUpload = useCallback(async (file: File) => {
+    const allowed = [
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/pdf',
+    ];
+    if (!allowed.includes(file.type)) {
+      toast.error('File must be DOC, DOCX, or PDF');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File must be less than 10MB');
+      return;
+    }
+    setTemplateUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'templates');
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Upload failed');
+      }
+      const data = await res.json();
+      setSettings((prev) => ({ ...prev, manuscriptTemplate: data.url }));
+      toast.success('Template uploaded');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to upload template');
+    } finally {
+      setTemplateUploading(false);
+    }
+  }, []);
 
   if (fetching) {
     return (
@@ -119,6 +156,90 @@ export default function AdminSettingsPage() {
               <div>
                 <label className="block text-sm font-medium text-navy-900 dark:text-white mb-2">Cover Image</label>
                 <ImageUpload value={settings.coverImage} onChange={(url) => setSettings({...settings, coverImage: url})} folder="settings" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Submission Guidelines</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-navy-900 dark:text-white mb-2">Reference Style</label>
+                <Select value={settings.referenceStyle} onValueChange={(v) => setSettings({...settings, referenceStyle: v})}>
+                  <SelectTrigger><SelectValue placeholder="Select reference style" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="VANCOUVER">Vancouver</SelectItem>
+                    <SelectItem value="APA">APA</SelectItem>
+                    <SelectItem value="MLA">MLA</SelectItem>
+                    <SelectItem value="CHICAGO">Chicago</SelectItem>
+                    <SelectItem value="HARVARD">Harvard</SelectItem>
+                    <SelectItem value="IEEE">IEEE</SelectItem>
+                    <SelectItem value="NLM">NLM</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Used for formatting references in published articles</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-900 dark:text-white mb-2">Manuscript Template</label>
+                <input
+                  ref={templateInputRef}
+                  type="file"
+                  accept=".doc,.docx,.pdf"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleTemplateUpload(file);
+                    if (templateInputRef.current) templateInputRef.current.value = '';
+                  }}
+                />
+                {settings.manuscriptTemplate ? (
+                  <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <FileText className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-green-800 dark:text-green-300 truncate">
+                        {settings.manuscriptTemplate.split('/').pop()}
+                      </p>
+                      <a
+                        href={settings.manuscriptTemplate}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-green-600 dark:text-green-400 hover:underline"
+                      >
+                        View current template
+                      </a>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSettings({...settings, manuscriptTemplate: ''})}
+                      className="p-1 text-green-600 hover:text-red-600 dark:text-green-400 dark:hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => templateInputRef.current?.click()}
+                    disabled={templateUploading}
+                    className="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-navy-700 rounded-lg hover:border-gold-400 dark:hover:border-gold-400 transition-colors bg-slate-50 dark:bg-navy-800/50"
+                  >
+                    {templateUploading ? (
+                      <>
+                        <Loader2 className="w-8 h-8 text-gold-500 mb-2 animate-spin" />
+                        <p className="text-sm text-slate-600 dark:text-slate-400">Uploading...</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-slate-400 dark:text-slate-500 mb-2" />
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Upload Template</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">DOC, DOCX, or PDF &middot; Max 10MB</p>
+                      </>
+                    )}
+                  </button>
+                )}
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Authors can download this template when preparing their manuscript</p>
               </div>
             </div>
           </CardContent>

@@ -139,7 +139,12 @@ interface ExtractedMetadata {
   authors: { firstName: string; lastName: string; email?: string; affiliation?: string }[];
 }
 
-export function SubmissionWizard() {
+interface JournalSettings {
+  referenceStyle: string;
+  manuscriptTemplate: string;
+}
+
+export function SubmissionWizard({ journalSettings }: { journalSettings: JournalSettings }) {
   const router = useRouter();
   const { data: session } = useSession();
   const [currentStep, setCurrentStep] = useState(1);
@@ -382,6 +387,11 @@ export function SubmissionWizard() {
           <p className="text-slate-600 dark:text-slate-400 mt-1">
             Upload your manuscript first — we'll extract the details for you to review and complete.
           </p>
+          {journalSettings.referenceStyle && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              This journal uses <span className="font-semibold text-navy-900 dark:text-white">{journalSettings.referenceStyle}</span> reference style.
+            </p>
+          )}
         </div>
 
         <div className="mb-8 overflow-hidden rounded-xl bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-800">
@@ -440,6 +450,7 @@ export function SubmissionWizard() {
                   supplementaryFiles={supplementaryFilesState}
                   extracting={extracting}
                   extractNotice={extractNotice}
+                  journalSettings={journalSettings}
                 />
               )}
               {currentStep === 2 && <Step2Fields register={register} errors={errors} watch={watch} />}
@@ -497,6 +508,7 @@ function Step1Fields({
   supplementaryFiles,
   extracting,
   extractNotice,
+  journalSettings,
 }: {
   register: ReturnType<typeof useForm<ManuscriptFormData>>['register'];
   errors: ReturnType<typeof useForm<ManuscriptFormData>>['formState']['errors'];
@@ -506,9 +518,28 @@ function Step1Fields({
   supplementaryFiles: File[];
   extracting: boolean;
   extractNotice: string | null;
+  journalSettings: JournalSettings;
 }) {
   return (
     <div className="space-y-6">
+      {journalSettings.manuscriptTemplate && (
+        <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-300">Use our manuscript template</p>
+            <p className="text-xs text-blue-600 dark:text-blue-400">Download the template to format your manuscript correctly before uploading.</p>
+          </div>
+          <a
+            href={`/api/public/manuscript-template`}
+            download
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shrink-0"
+          >
+            <Download className="w-4 h-4" />
+            Download Template
+          </a>
+        </div>
+      )}
+
       <div>
         <label className="block text-sm font-medium text-navy-900 dark:text-white mb-2">
           Manuscript File (PDF, DOC, DOCX) *
