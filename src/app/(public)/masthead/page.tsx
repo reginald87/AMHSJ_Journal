@@ -13,8 +13,22 @@ export const metadata: Metadata = {
 
 type EditorialMember = Prisma.EditorialRoleGetPayload<{ include: { user: true } }>;
 
-const CONTACT_EMAIL = 'amhsj@bayelsamedicaluniversity.edu.ng';
-const CONTACT_ADDRESS = 'Bayelsa Medical University, Yenagoa, Bayelsa State, Nigeria';
+const DEFAULTS = {
+  heroTitle: 'Journal Masthead',
+  heroSubtitle: "Complete information about AMHSJ's editorial structure, publication details, and leadership team.",
+  contactEmail: 'amhsj@bayelsamedicaluniversity.edu.ng',
+  contactAddress: 'Bayelsa Medical University, Yenagoa, Bayelsa State, Nigeria',
+  aboutDescription: "The Advances in Medicine & Health Sciences Journal (AMHSJ) is an international peer-reviewed journal published by volumes. It disseminates high-quality research across all medical and health science specialties from researchers worldwide.",
+  aboutOpenAccess: "Content is published open access and immediately free to read and download.",
+  aboutLicense: "CC BY-NC-ND 3.0 — Except where otherwise noted, content is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 3.0 License.",
+  publisherName: "Bayelsa Medical University",
+};
+
+async function getSections() {
+  const page = await prisma.page.findUnique({ where: { slug: 'masthead' } });
+  if (!page?.sections) return null;
+  try { return JSON.parse(page.sections); } catch { return null; }
+}
 
 async function getMasthead() {
   const members = await prisma.editorialRole.findMany({
@@ -36,7 +50,17 @@ async function getMasthead() {
 }
 
 export default async function MastheadPage() {
+  const s = await getSections();
   const board = await getMasthead();
+
+  const heroTitle = s?.heroTitle ?? DEFAULTS.heroTitle;
+  const heroSubtitle = s?.heroSubtitle ?? DEFAULTS.heroSubtitle;
+  const contactEmail = s?.contactEmail ?? DEFAULTS.contactEmail;
+  const contactAddress = s?.contactAddress ?? DEFAULTS.contactAddress;
+  const aboutDescription = s?.aboutDescription ?? DEFAULTS.aboutDescription;
+  const aboutOpenAccess = s?.aboutOpenAccess ?? DEFAULTS.aboutOpenAccess;
+  const aboutLicense = s?.aboutLicense ?? DEFAULTS.aboutLicense;
+  const publisherName = s?.publisherName ?? DEFAULTS.publisherName;
 
   const eic = board['EDITOR_IN_CHIEF']?.[0];
   const deputy = board['DEPUTY_EDITOR_IN_CHIEF']?.[0];
@@ -60,10 +84,8 @@ export default async function MastheadPage() {
               </span>
               Editorial Structure
             </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">Journal Masthead</h1>
-            <p className="text-xl sm:text-2xl text-slate-300 leading-relaxed">
-              Complete information about AMHSJ&apos;s editorial structure, publication details, and leadership team.
-            </p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">{heroTitle}</h1>
+            <p className="text-xl sm:text-2xl text-slate-300 leading-relaxed">{heroSubtitle}</p>
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-navy-950 to-transparent" />
@@ -227,14 +249,14 @@ export default async function MastheadPage() {
               <Mail className="w-5 h-5 text-navy-700 dark:text-navy-300 mt-0.5" />
               <div>
                 <p className="font-medium text-navy-900 dark:text-white text-sm">Editor-in-Chief</p>
-                <a href={`mailto:${CONTACT_EMAIL}`} className="text-sm text-gold-600 dark:text-gold-400 hover:underline">{CONTACT_EMAIL}</a>
+                <a href={`mailto:${contactEmail}`} className="text-sm text-gold-600 dark:text-gold-400 hover:underline">{contactEmail}</a>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <MapPin className="w-5 h-5 text-navy-700 dark:text-navy-300 mt-0.5" />
               <div>
                 <p className="font-medium text-navy-900 dark:text-white text-sm">Address</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{CONTACT_ADDRESS}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{contactAddress}</p>
               </div>
             </div>
           </div>
@@ -243,18 +265,10 @@ export default async function MastheadPage() {
         {/* About AMHSJ */}
         <section className="bg-white dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-navy-800 p-8">
           <h2 className="text-xl font-bold text-navy-900 dark:text-white mb-4">About AMHSJ</h2>
-          <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-            The Advances in Medicine &amp; Health Sciences Journal (AMHSJ) is an international peer-reviewed journal published by volumes. It disseminates high-quality research across all medical and health science specialties from researchers worldwide.
-          </p>
-          <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-            Content is published open access and immediately free to read and download.
-          </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            CC BY-NC-ND 3.0 — Except where otherwise noted, content is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 3.0 License.
-          </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            <strong>Bayelsa Medical University</strong> is the official publisher of AMHSJ.
-          </p>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">{aboutDescription}</p>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">{aboutOpenAccess}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{aboutLicense}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2"><strong>{publisherName}</strong> is the official publisher of AMHSJ.</p>
         </section>
 
         {/* CTA */}

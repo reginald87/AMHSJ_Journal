@@ -249,6 +249,22 @@ async function main() {
     },
   );
 
+  await seedPage(
+    'masthead',
+    'Journal Masthead',
+    'Complete information about AMHSJ editorial structure, publication details, and leadership team.',
+    {
+      heroTitle: 'Journal Masthead',
+      heroSubtitle: "Complete information about AMHSJ's editorial structure, publication details, and leadership team.",
+      contactEmail: 'amhsj@bayelsamedicaluniversity.edu.ng',
+      contactAddress: 'Bayelsa Medical University, Yenagoa, Bayelsa State, Nigeria',
+      aboutDescription: 'The Advances in Medicine & Health Sciences Journal (AMHSJ) is an international peer-reviewed journal published by volumes. It disseminates high-quality research across all medical and health science specialties from researchers worldwide.',
+      aboutOpenAccess: 'Content is published open access and immediately free to read and download.',
+      aboutLicense: 'CC BY-NC-ND 3.0 — Except where otherwise noted, content is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 3.0 License.',
+      publisherName: 'Bayelsa Medical University',
+    },
+  );
+
   console.log('\nCMS page seeding complete!');
 }
 
