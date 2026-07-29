@@ -44,7 +44,7 @@ const securityHeaders = {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith('/api/auth') || pathname.startsWith('/_next') || pathname.startsWith('/uploads') || pathname.includes('.')) {
+  if (pathname.startsWith('/api') || pathname.startsWith('/_next') || pathname.startsWith('/uploads') || pathname.includes('.')) {
     const res = NextResponse.next();
     Object.entries(securityHeaders).forEach(([key, value]) => {
       res.headers.set(key, value);
