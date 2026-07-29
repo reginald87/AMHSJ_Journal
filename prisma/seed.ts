@@ -78,18 +78,18 @@ async function main() {
 
   // 2. Create Users
   const users = [
-    { email: 'admin@amhsj.org', firstName: 'Admin', lastName: 'User', role: 'ADMIN' as Role, affiliation: 'AMHSJ Editorial Office', status: 'ACTIVE' as const, department: undefined, orcid: undefined },
-    { email: 'john.smith@university.edu', firstName: 'John', lastName: 'Smith', role: 'EDITOR_IN_CHIEF' as Role, affiliation: 'Harvard Medical School', department: 'Internal Medicine', orcid: '0000-0001-1234-5678', status: 'ACTIVE' as const },
-    { email: 'sarah.johnson@hospital.org', firstName: 'Sarah', lastName: 'Johnson', role: 'EDITOR' as Role, affiliation: 'Johns Hopkins Hospital', department: 'Cardiology', orcid: '0000-0002-2345-6789', status: 'ACTIVE' as const },
-    { email: 'michael.chen@med.edu', firstName: 'Michael', lastName: 'Chen', role: 'EDITOR' as Role, affiliation: 'Stanford Medical Center', department: 'Neurology', orcid: '0000-0003-3456-7890', status: 'ACTIVE' as const },
-    { email: 'emily.brown@research.org', firstName: 'Emily', lastName: 'Brown', role: 'REVIEWER' as Role, affiliation: 'MIT', department: 'Biomedical Engineering', status: 'ACTIVE' as const, orcid: undefined },
-    { email: 'david.wilson@clinic.com', firstName: 'David', lastName: 'Wilson', role: 'REVIEWER' as Role, affiliation: 'Mayo Clinic', department: 'Surgery', status: 'ACTIVE' as const, orcid: undefined },
-    { email: 'lisa.garcia@uni.edu', firstName: 'Lisa', lastName: 'Garcia', role: 'REVIEWER' as Role, affiliation: 'UCSF', department: 'Oncology', status: 'ACTIVE' as const, orcid: undefined },
-    { email: 'james.taylor@lab.gov', firstName: 'James', lastName: 'Taylor', role: 'REVIEWER' as Role, affiliation: 'NIH', department: 'Pharmacology', status: 'ACTIVE' as const, orcid: undefined },
-    { email: 'anna.lee@hospital.kr', firstName: 'Anna', lastName: 'Lee', role: 'AUTHOR' as Role, affiliation: 'Seoul National University Hospital', status: 'ACTIVE' as const, department: undefined, orcid: undefined },
-    { email: 'robert.martinez@med.mx', firstName: 'Robert', lastName: 'Martinez', role: 'AUTHOR' as Role, affiliation: 'UNAM Medical School', status: 'ACTIVE' as const, department: undefined, orcid: undefined },
-    { email: 'priya.patel@aiims.in', firstName: 'Priya', lastName: 'Patel', role: 'AUTHOR' as Role, affiliation: 'AIIMS Delhi', department: 'Pediatrics', status: 'ACTIVE' as const, orcid: undefined },
-    { email: 'ahmed.hassan@cairo.edu', firstName: 'Ahmed', lastName: 'Hassan', role: 'AUTHOR' as Role, affiliation: 'Cairo University', department: 'Radiology', status: 'ACTIVE' as const, orcid: undefined },
+    { email: 'admin@amhsj.org', firstName: 'Admin', lastName: 'User', role: 'ADMIN' as Role, affiliation: 'AMHSJ Editorial Office', country: 'Nigeria', status: 'ACTIVE' as const, department: undefined, orcid: undefined },
+    { email: 'john.smith@university.edu', firstName: 'John', lastName: 'Smith', role: 'EDITOR_IN_CHIEF' as Role, affiliation: 'Harvard Medical School', country: 'United States', department: 'Internal Medicine', orcid: '0000-0001-1234-5678', status: 'ACTIVE' as const },
+    { email: 'sarah.johnson@hospital.org', firstName: 'Sarah', lastName: 'Johnson', role: 'EDITOR' as Role, affiliation: 'Johns Hopkins Hospital', country: 'United States', department: 'Cardiology', orcid: '0000-0002-2345-6789', status: 'ACTIVE' as const },
+    { email: 'michael.chen@med.edu', firstName: 'Michael', lastName: 'Chen', role: 'EDITOR' as Role, affiliation: 'Stanford Medical Center', country: 'United States', department: 'Neurology', orcid: '0000-0003-3456-7890', status: 'ACTIVE' as const },
+    { email: 'emily.brown@research.org', firstName: 'Emily', lastName: 'Brown', role: 'REVIEWER' as Role, affiliation: 'MIT', country: 'United States', department: 'Biomedical Engineering', status: 'ACTIVE' as const, orcid: undefined },
+    { email: 'david.wilson@clinic.com', firstName: 'David', lastName: 'Wilson', role: 'REVIEWER' as Role, affiliation: 'Mayo Clinic', country: 'United States', department: 'Surgery', status: 'ACTIVE' as const, orcid: undefined },
+    { email: 'lisa.garcia@uni.edu', firstName: 'Lisa', lastName: 'Garcia', role: 'REVIEWER' as Role, affiliation: 'UCSF', country: 'United States', department: 'Oncology', status: 'ACTIVE' as const, orcid: undefined },
+    { email: 'james.taylor@lab.gov', firstName: 'James', lastName: 'Taylor', role: 'REVIEWER' as Role, affiliation: 'NIH', country: 'United States', department: 'Pharmacology', status: 'ACTIVE' as const, orcid: undefined },
+    { email: 'anna.lee@hospital.kr', firstName: 'Anna', lastName: 'Lee', role: 'AUTHOR' as Role, affiliation: 'Seoul National University Hospital', country: 'South Korea', status: 'ACTIVE' as const, department: undefined, orcid: undefined },
+    { email: 'robert.martinez@med.mx', firstName: 'Robert', lastName: 'Martinez', role: 'AUTHOR' as Role, affiliation: 'UNAM Medical School', country: 'Mexico', status: 'ACTIVE' as const, department: undefined, orcid: undefined },
+    { email: 'priya.patel@aiims.in', firstName: 'Priya', lastName: 'Patel', role: 'AUTHOR' as Role, affiliation: 'AIIMS Delhi', country: 'India', department: 'Pediatrics', status: 'ACTIVE' as const, orcid: undefined },
+    { email: 'ahmed.hassan@cairo.edu', firstName: 'Ahmed', lastName: 'Hassan', role: 'AUTHOR' as Role, affiliation: 'Cairo University', country: 'Egypt', department: 'Radiology', status: 'ACTIVE' as const, orcid: undefined },
   ];
 
   const createdUsers: (typeof users[0] & { id: string })[] = [];

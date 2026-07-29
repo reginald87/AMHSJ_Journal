@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { BookOpen, Award, Globe, Users, Calendar, Search, Shield, FileText, GraduationCap, HeartPulse, Clock, CheckCircle, Mail, Building } from 'lucide-react';
+import { BookOpen, Award, Globe, Users, Calendar, Search, Shield, FileText, GraduationCap, HeartPulse, Clock, CheckCircle, Mail, Building, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { prisma } from '@/lib/prisma';
 
@@ -233,6 +233,36 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* History Timeline */}
+      {history.length > 0 && (
+        <section className="py-20 bg-slate-50 dark:bg-navy-950">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <span className="mb-4 block"><Badge variant="navy" size="lg" className="px-4 py-2 text-sm">Our Journey</Badge></span>
+              <h2 className="text-3xl sm:text-4xl font-bold text-navy-900 dark:text-white mb-4">Journal History</h2>
+              <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Milestones in the development and growth of AMHSJ since its founding.</p>
+            </div>
+            <div className="relative">
+              <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-gold-400 via-navy-400 to-slate-200 dark:from-gold-500 dark:via-navy-600 dark:to-navy-800" />
+              <div className="space-y-12">
+                {history.map((item, index) => (
+                  <div key={index} className="relative pl-20 animate-slide-up" style={{ animationDelay: `${index * 150}ms` }}>
+                    <div className="absolute left-4 w-9 h-9 bg-gold-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg z-10">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <div className="bg-white dark:bg-navy-900 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-navy-800 hover:shadow-md transition-shadow">
+                      <span className="inline-block px-3 py-1 bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 text-sm font-semibold rounded-full mb-3">{item.year}</span>
+                      <h3 className="text-lg font-bold text-navy-900 dark:text-white mb-2">{item.title}</h3>
+                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Contact Information */}
       <section className="py-20">
