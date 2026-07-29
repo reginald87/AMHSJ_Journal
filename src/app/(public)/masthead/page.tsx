@@ -43,6 +43,7 @@ export default async function MastheadPage() {
   const editors = board['EDITOR'] || [];
   const associateEditors = board['ASSOCIATE_EDITOR'] || [];
   const international = board['INTERNATIONAL_EDITOR'] || [];
+  const reviewers = board['REVIEWER'] || [];
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-navy-950">
@@ -170,6 +171,32 @@ export default async function MastheadPage() {
                 <div key={member.id} className="bg-white dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-navy-800 p-5">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center text-teal-700 dark:text-teal-400 font-bold text-sm flex-shrink-0">
+                      {member.user.firstName?.[0]}{member.user.lastName?.[0]}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-navy-900 dark:text-white text-sm">{member.user.firstName} {member.user.lastName}</h3>
+                      {member.user.affiliation && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{member.user.affiliation}</p>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Reviewers */}
+        {reviewers.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"><Users className="w-5 h-5 text-blue-600 dark:text-blue-400" /></div>
+              <h2 className="text-xl font-bold text-navy-900 dark:text-white">Reviewers</h2>
+            </div>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">Our dedicated reviewers who ensure the quality and integrity of published research</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {reviewers.map((member) => (
+                <div key={member.id} className="bg-white dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-navy-800 p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-700 dark:text-blue-400 font-bold text-sm flex-shrink-0">
                       {member.user.firstName?.[0]}{member.user.lastName?.[0]}
                     </div>
                     <div>

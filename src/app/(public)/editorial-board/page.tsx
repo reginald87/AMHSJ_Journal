@@ -17,6 +17,7 @@ const editorialRoles = [
   { role: 'ASSOCIATE_EDITOR', label: 'Associate Editor', icon: Users, color: 'text-navy-700 dark:text-navy-300', bgColor: 'bg-navy-100 dark:bg-navy-800' },
   { role: 'EDITOR', label: 'Editor', icon: Stethoscope, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
   { role: 'INTERNATIONAL_EDITOR', label: 'International Editorial Advisory Board', icon: Globe, color: 'text-teal-600 dark:text-teal-400', bgColor: 'bg-teal-100 dark:bg-teal-900/30' },
+  { role: 'REVIEWER', label: 'Reviewers', icon: Users, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
 ];
 
 const specialtyIcons: Record<string, React.ReactNode> = {};
