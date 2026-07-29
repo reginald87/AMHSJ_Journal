@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaClient, Role, ManuscriptStatus } from '@prisma/client';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import bcrypt from 'bcryptjs';
