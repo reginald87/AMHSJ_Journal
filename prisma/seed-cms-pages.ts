@@ -121,6 +121,134 @@ async function main() {
     ABOUT_SECTIONS,
   );
 
+  await seedPage(
+    'guidelines',
+    'Submission Guidelines',
+    'Submission guidelines for authors publishing in Advances in Medicine and Health Sciences Journal.',
+    {
+      heroTitle: 'Submission Guidelines',
+      heroSubtitle: 'Please read carefully before submission. Follow these guidelines to ensure your manuscript meets all requirements and avoids rejection.',
+      email: 'amhsj@bayelsamedicaluniversity.edu.ng',
+      articleTypes: [
+        { type: 'Original Research Articles', description: 'Reports of original research', wordLimit: '3000 words max', abstract: '300 words max', references: 'Vancouver format', figures: '250 words each' },
+        { type: 'Review Articles', description: 'Comprehensive reviews', wordLimit: '3500 words max', abstract: '300 words max', references: 'Vancouver format', figures: '250 words each' },
+        { type: 'Case/Audit Reports', description: 'Clinical case reports', wordLimit: '800 words max', abstract: '300 words max', references: 'Vancouver format', figures: '250 words each' },
+        { type: 'Letters', description: 'Brief communications', wordLimit: 'As appropriate', abstract: 'Not required', references: 'Vancouver format', figures: 'Minimal' },
+      ],
+      abstractStructure: [
+        { step: '1', title: 'Background', description: 'Study rationale, context, and what was previously known' },
+        { step: '2', title: 'Objectives', description: 'Clear statement of study aims and research questions' },
+        { step: '3', title: 'Methods', description: 'Study design, participants, procedures, and analytical methods' },
+        { step: '4', title: 'Results', description: 'Main findings with key data and statistical significance' },
+        { step: '5', title: 'Conclusion', description: 'Principal conclusions and their clinical/scientific implications' },
+      ],
+      peerReviewCriteria: [
+        { title: 'Structure & Content', items: ['Does the title reflect the contents?', 'Does abstract reflect all study aspects?', 'Is study rationale adequately described?', 'Are objectives clearly stated?', 'Do results justify the conclusions?', 'Is the paper clearly written?'] },
+        { title: 'Methodology & Analysis', items: ['Is study design appropriate?', 'Is sample size appropriate?', 'Are data collection methods described?', 'Are bias minimization techniques documented?', 'Are data analysis methods appropriate?', 'Is statistical significance documented?'] },
+        { title: 'Discussion & References', items: ['Are key findings clearly stated?', 'Are differences with other studies discussed?', 'Are implications clearly explained?', 'Are references appropriate and up-to-date?', 'Do references follow Vancouver style?', 'Any important references missing?'] },
+        { title: 'Ethics & Quality', items: ['Are ethical considerations described?', 'Is ethics approval documented?', 'Are results credible and logical?', 'Are there grammar/language problems?', 'Is interpretation warranted by data?', 'Are conflicts of interest declared?'] },
+      ],
+      submissionSteps: [
+        { step: 1, title: 'Prepare Your Manuscript', description: 'Format according to guidelines and prepare all required files' },
+        { step: 2, title: 'Create Account', description: 'Register on our submission platform with ORCID integration' },
+        { step: 3, title: 'Upload Files', description: 'Submit manuscript, figures, and supplementary materials' },
+        { step: 4, title: 'Review & Submit', description: 'Review all information and complete submission' },
+      ],
+      preSubmissionChecks: ['Use the official manuscript template', 'Complete the author checklist', 'Verify all required sections', 'Check figure and table quality'],
+      rejectionReasons: ['Incorrect formatting or template use', 'Incomplete author information', 'Missing ethics approvals', 'Improper reference formatting'],
+      authorshipCriteria: [
+        'Substantial contributions to the conception, design, data acquisition, or analysis/interpretation of data',
+        'Drafting the work or revising it critically for important intellectual content',
+        'Final approval of the version to be published',
+        'Agreement to be accountable for all aspects of the work',
+      ],
+      publicationDetails: [
+        { label: 'Open Access Policy', value: 'Free, unrestricted online access' },
+        { label: 'License', value: 'CC BY-NC-ND' },
+        { label: 'Publication Fee', value: 'No charges' },
+        { label: 'Reference Style', value: 'Vancouver format' },
+      ],
+    },
+  );
+
+  await seedPage(
+    'ethics',
+    'Publication Ethics',
+    'Ethical guidelines and policies for authors, reviewers, and editors at AMHSJ.',
+    {
+      heroTitle: 'Publication Ethics & Policies',
+      heroSubtitle: 'AMHSJ is committed to upholding the highest standards of publication ethics. We follow the guidelines established by the Committee on Publication Ethics (COPE).',
+      principles: [
+        { icon: 'Shield', title: 'Research Integrity', items: ['All research must be conducted with honesty and transparency.', 'Data must not be fabricated, falsified, or manipulated.', 'Proper credit must be given to prior work through appropriate citations.', 'Overlapping or duplicate submissions to multiple journals are prohibited.'] },
+        { icon: 'Eye', title: 'Transparency & Disclosure', items: ['All conflicts of interest must be disclosed at the time of submission.', 'Funding sources must be acknowledged in the manuscript.', 'Clinical trials must be registered before patient enrollment.', 'Data availability statements are required for all research articles.'] },
+        { icon: 'Scale', title: 'Fairness & Impartiality', items: ['Manuscripts are evaluated solely on scientific merit and relevance.', 'The peer review process is double-blind to ensure impartiality.', 'Editorial decisions are made independently of commercial or political interests.', 'Diversity and inclusion are valued in authorship and peer review.'] },
+        { icon: 'BookOpen', title: 'Authorship Standards', items: ['All authors must meet the ICMJE criteria for authorship.', 'All listed authors must have made a substantive contribution to the work.', 'The corresponding author is responsible for the integrity of the entire manuscript.', 'Ghost or gift authorship is strictly prohibited.'] },
+      ],
+      misconduct: [
+        { title: 'Plagiarism', description: 'Presenting another person\'s ideas, data, or text as one\'s own without proper attribution. All manuscripts are screened using industry-standard plagiarism detection tools.', severity: 'Manuscript rejection and potential ban from future submissions.' },
+        { title: 'Data Fabrication & Falsification', description: 'Making up research data or manipulating research results to support hypotheses. This includes selective reporting of data.', severity: 'Immediate rejection, retraction of published articles, and notification of the author\'s institution.' },
+        { title: 'Duplicate Submission', description: 'Submitting the same manuscript to multiple journals simultaneously or publishing the same work in multiple journals without disclosure.', severity: 'Immediate rejection and retraction if published.' },
+        { title: 'Undisclosed Conflicts of Interest', description: 'Failure to disclose financial, personal, or professional relationships that could influence the research or its interpretation.', severity: 'Request for correction, or retraction if the undisclosed conflict is material.' },
+      ],
+      process: [
+        { step: 'Complaint Received', description: 'Any concerns about published or submitted manuscripts can be reported to the Editor-in-Chief at ethics@amhsj.org.' },
+        { step: 'Initial Assessment', description: 'The Editor-in-Chief evaluates the complaint and determines whether a formal investigation is warranted.' },
+        { step: 'Investigation', description: 'A confidential investigation is conducted, involving the authors, reviewers, and/or institutional authorities as needed.' },
+        { step: 'COPE Consultation', description: 'For complex cases, guidance is sought from the Committee on Publication Ethics (COPE).' },
+        { step: 'Resolution', description: 'Appropriate action is taken, which may include correction, expression of concern, or retraction of the published article.' },
+        { step: 'Notification', description: 'All parties involved are notified of the outcome. Retractions are published transparently in the journal.' },
+      ],
+    },
+  );
+
+  await seedPage(
+    'faq',
+    'Frequently Asked Questions',
+    'Answers to common questions about submitting to and publishing in AMHSJ.',
+    {
+      heroTitle: 'Frequently Asked Questions',
+      heroSubtitle: 'Find answers to common questions about submitting, publishing, and accessing AMHSJ.',
+      faqs: [
+        {
+          category: 'Submission',
+          items: [
+            { q: 'How do I submit a manuscript?', a: 'Create an author account at /register, then use the submission wizard at /submit. The 5-step process guides you through entering details, adding co-authors, uploading files, making declarations, and reviewing before final submission.' },
+            { q: 'Is there a submission fee?', a: 'No. AMHSJ charges no submission fees. A modest article processing charge (APC) applies only upon acceptance, with full waivers available for authors from low-income countries.' },
+            { q: 'Can I submit a manuscript that is under review elsewhere?', a: 'No. AMHSJ requires that manuscripts are not under consideration by any other journal. Simultaneous submissions are considered a breach of publication ethics.' },
+            { q: 'What file formats are accepted?', a: 'We accept Microsoft Word (.docx) as the preferred format, LaTeX with PDF output, and PDF for initial submissions. Figures should be provided as separate high-resolution files (minimum 300 DPI).' },
+            { q: 'How long does the review process take?', a: 'Initial editorial screening takes 1\u20132 weeks. Peer review typically takes 4\u20136 weeks. You will receive a decision within 6\u20138 weeks of submission. Revisions may require an additional 2\u20134 weeks.' },
+          ],
+        },
+        {
+          category: 'Peer Review',
+          items: [
+            { q: 'What type of peer review does AMHSJ use?', a: 'AMHSJ uses a double-blind peer review process. Neither the authors nor the reviewers know each other\'s identities throughout the review process.' },
+            { q: 'How many reviewers evaluate my manuscript?', a: 'Each manuscript is reviewed by at least two independent experts in the relevant field. In some cases, the editor may invite additional reviewers for specialized topics.' },
+            { q: 'Can I suggest reviewers for my manuscript?', a: 'Yes. You may suggest up to 3 potential reviewers with relevant expertise. You must not suggest anyone with a conflict of interest. The editorial team has the final say on reviewer selection.' },
+            { q: 'What happens if reviewers give conflicting recommendations?', a: 'When reviewers disagree, the editor may seek an additional review, make an independent assessment, or convene an editorial board discussion before reaching a decision.' },
+          ],
+        },
+        {
+          category: 'Publication',
+          items: [
+            { q: 'What happens after my manuscript is accepted?', a: 'Accepted manuscripts enter the production process: copyediting, typesetting, author proofreading, and final publication. Articles are published online within 2 weeks of final acceptance.' },
+            { q: 'What license are articles published under?', a: 'All articles are published under the Creative Commons Attribution 4.0 International (CC BY 4.0) license, ensuring immediate and unrestricted access.' },
+            { q: 'How do I track my submission?', a: 'Log in to your author dashboard at /dashboard to track the status of your manuscript at every stage, from submission through review to publication.' },
+            { q: 'Can I request corrections after publication?', a: 'Yes. If you identify errors in your published article, contact the editorial office. Minor corrections are published as corrigenda; major issues may require a formal erratum or retraction.' },
+          ],
+        },
+        {
+          category: 'Account & Access',
+          items: [
+            { q: 'I forgot my password. How do I reset it?', a: 'Visit the login page at /login and click "Forgot Password." A reset link will be sent to your registered email address.' },
+            { q: 'How do I update my profile information?', a: 'Log in and navigate to your profile settings in the dashboard. You can update your name, affiliation, ORCID, and other details.' },
+            { q: 'Can I access articles without an account?', a: 'Yes. AMHSJ is a fully open-access journal. All published articles are freely available to anyone without requiring an account or subscription.' },
+          ],
+        },
+      ],
+    },
+  );
+
   console.log('\nCMS page seeding complete!');
 }
 

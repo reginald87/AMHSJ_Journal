@@ -49,6 +49,7 @@ export default function AdminPageEditorPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
+  const [sections, setSections] = useState('');
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [isPublished, setIsPublished] = useState(true);
@@ -74,10 +75,11 @@ export default function AdminPageEditorPage() {
           setStatus({ kind: 'error', message: 'Failed to load page' });
           return;
         }
-        const data = (await res.json()) as PageData;
+        const data = (await res.json()) as PageData & { sections?: string | null };
         setTitle(data.title);
         setDescription(data.description ?? '');
         setContent(data.content);
+        setSections(data.sections ?? '');
         setMetaTitle(data.metaTitle ?? '');
         setMetaDescription(data.metaDescription ?? '');
         setIsPublished(data.isPublished);
@@ -108,14 +110,15 @@ export default function AdminPageEditorPage() {
       const res = await fetch(`/api/admin/pages/${slug}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          description: description || null,
-          content,
-          metaTitle: metaTitle || null,
-          metaDescription: metaDescription || null,
-          isPublished,
-        }),
+          body: JSON.stringify({
+            title,
+            description: description || null,
+            content,
+            sections: sections || null,
+            metaTitle: metaTitle || null,
+            metaDescription: metaDescription || null,
+            isPublished,
+          }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -217,6 +220,14 @@ export default function AdminPageEditorPage() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
+            />
+            <Textarea
+              label="Sections (JSON)"
+              rows={8}
+              value={sections}
+              onChange={(e) => setSections(e.target.value)}
+              placeholder='{"key": "value"} — structured data for the page'
+              className="font-mono text-xs"
             />
             <label className="flex items-center gap-3">
               <input
