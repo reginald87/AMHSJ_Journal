@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { CheckCircle, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
-export function VerifyEmailPage() {
+function VerifyEmailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
