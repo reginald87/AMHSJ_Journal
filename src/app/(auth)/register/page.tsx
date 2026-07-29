@@ -50,7 +50,7 @@ const steps = [
   { id: 4, title: 'Confirm', description: 'Review and submit your registration' },
 ];
 
-export function RegisterPage() {
+function RegisterPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
