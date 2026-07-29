@@ -4,6 +4,8 @@ import { Shield, Award, Users, Stethoscope, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Editorial Board',
   description: 'Meet the editorial board of Advances in Medicine and Health Sciences Journal - leading experts from world-renowned institutions.',
