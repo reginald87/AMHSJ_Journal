@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Save, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import ContactPageEditor from '../ContactPageEditor';
 import AboutPageEditor from '../AboutPageEditor';
+import SectionsEditor from '@/components/admin/SectionsEditor';
 
 const STRUCTURED_SLUGS: Record<string, React.ComponentType<{ slug: string }>> = {
   contact: ContactPageEditor,
@@ -221,14 +222,10 @@ export default function AdminPageEditorPage() {
               onChange={(e) => setContent(e.target.value)}
               required
             />
-            <Textarea
-              label="Sections (JSON)"
-              rows={8}
-              value={sections}
-              onChange={(e) => setSections(e.target.value)}
-              placeholder='{"key": "value"} — structured data for the page'
-              className="font-mono text-xs"
-            />
+            <div>
+              <p className="block text-sm font-medium text-navy-900 dark:text-white mb-1.5">Sections</p>
+              <SectionsEditor value={sections} onChange={setSections} />
+            </div>
             <label className="flex items-center gap-3">
               <input
                 type="checkbox"
