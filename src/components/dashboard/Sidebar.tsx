@@ -151,8 +151,8 @@ export function Sidebar({ isOpen, onClose, collapsed, onToggleCollapse }: Sideba
 
   const getGroups = (): NavGroup[] => {
     const role = session?.user?.role || 'AUTHOR';
-    if (['ADMIN', 'EDITOR_IN_CHIEF'].includes(role)) return adminGroups;
-    if (['EDITOR', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR'].includes(role)) return editorGroups;
+    if (role === 'ADMIN') return adminGroups;
+    if (['EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR'].includes(role)) return editorGroups;
     if (role === 'REVIEWER') return reviewerGroups;
     if (role === 'EDITOR_ASSISTANT') return editorAssistantGroups;
     return authorGroups;

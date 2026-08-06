@@ -12,7 +12,7 @@ export default async function EditorPage() {
   if (!session) redirect('/login');
 
   const role = session.user?.role;
-  if (['ADMIN', 'EDITOR_IN_CHIEF'].includes(role ?? '')) {
+  if (role === 'ADMIN') {
     redirect('/admin');
   }
 

@@ -6,7 +6,7 @@ import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminVolumes');
 
-const VIEWER_ROLES = ['ADMIN', 'EDITOR_ASSISTANT'];
+const VIEWER_ROLES = ['ADMIN', 'EDITOR_ASSISTANT', 'EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR'];
 
 export async function GET() {
   try {

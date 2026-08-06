@@ -60,9 +60,9 @@ export function LoginPageContent() {
         const res = await fetch('/api/auth/session');
         const session = await res.json();
         const role = session?.user?.role;
-        if (role === 'ADMIN' || role === 'EDITOR_IN_CHIEF') {
+        if (role === 'ADMIN') {
           router.push('/admin/overview');
-        } else if (['EDITOR', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR'].includes(role)) {
+        } else if (['EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR'].includes(role)) {
           router.push('/editor');
         } else if (role === 'EDITOR_ASSISTANT') {
           router.push('/editor-assistant');

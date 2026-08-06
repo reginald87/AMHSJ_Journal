@@ -24,8 +24,9 @@ const publicPaths = [
   '/announcements',
 ];
 
-const adminRoles = ['ADMIN', 'EDITOR_IN_CHIEF'];
-const editorRoles = ['EDITOR', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR'];
+const adminRoles = ['ADMIN'];
+const editorRoles = ['EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR'];
+const editorAssistantRoles = ['EDITOR_ASSISTANT', 'ADMIN', 'EDITOR_IN_CHIEF'];
 const reviewerRoles = ['REVIEWER', ...editorRoles, ...adminRoles];
 
 function isPublicPath(pathname: string): boolean {
@@ -71,10 +72,17 @@ export async function proxy(request: NextRequest) {
   const role = token.role as string | undefined;
 
   if (pathname.startsWith('/admin') && !adminRoles.includes(role || '')) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    const isManuscriptManagement = pathname === '/admin/manuscripts' || pathname.startsWith('/admin/manuscripts/');
+    if (!(role === 'EDITOR_ASSISTANT' && isManuscriptManagement)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
   }
 
   if (pathname.startsWith('/editor') && !editorRoles.includes(role || '')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  if (pathname.startsWith('/editor-assistant') && !editorAssistantRoles.includes(role || '')) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 

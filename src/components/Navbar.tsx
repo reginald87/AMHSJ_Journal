@@ -192,13 +192,13 @@ export function Navbar() {
                           {item.label}
                         </Link>
                       ))}
-                      {['ADMIN', 'EDITOR_IN_CHIEF'].includes(session.user?.role || '') && adminNavItems.map((item) => (
+                      {session.user?.role === 'ADMIN' && adminNavItems.map((item) => (
                         <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white" onClick={() => setUserMenuOpen(false)}>
                           <item.icon className="w-4 h-4" />
                           {item.label}
                         </Link>
                       ))}
-                      {['EDITOR', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR'].includes(session.user?.role || '') && editorNavItems.map((item) => (
+                      {['EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR'].includes(session.user?.role || '') && editorNavItems.map((item) => (
                         <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white" onClick={() => setUserMenuOpen(false)}>
                           <item.icon className="w-4 h-4" />
                           {item.label}
@@ -299,12 +299,12 @@ export function Navbar() {
                     <item.icon className="w-4 h-4" /> {item.label}
                   </Link>
                 ))}
-                {['ADMIN', 'EDITOR_IN_CHIEF'].includes(session.user?.role || '') && adminNavItems.map((item) => (
+                {session.user?.role === 'ADMIN' && adminNavItems.map((item) => (
                   <Link key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                     <item.icon className="w-4 h-4" /> {item.label}
                   </Link>
                 ))}
-                {['EDITOR', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR'].includes(session.user?.role || '') && editorNavItems.map((item) => (
+                {['EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR'].includes(session.user?.role || '') && editorNavItems.map((item) => (
                   <Link key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 dark:text-slate-400 dark:hover:bg-navy-800 dark:hover:text-white rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                     <item.icon className="w-4 h-4" /> {item.label}
                   </Link>
