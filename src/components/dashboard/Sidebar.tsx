@@ -142,7 +142,7 @@ export function Sidebar({ isOpen, onClose, collapsed, onToggleCollapse }: Sideba
     {
       label: 'Publishing',
       items: [
-        { href: '/editor-assistant/manuscripts', label: 'Manuscripts', icon: <FileText className="w-5 h-5" /> },
+        { href: '/admin/manuscripts', label: 'Manuscripts', icon: <FileText className="w-5 h-5" /> },
         { href: '/editor-assistant/publish', label: 'Publish', icon: <BookOpen className="w-5 h-5" /> },
         { href: '/dashboard/notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" /> },
       ],

@@ -5,7 +5,7 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
-const ALLOWED_ROLES = ['ADMIN', 'EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR', 'REVIEWER', 'AUTHOR'];
+const ALLOWED_ROLES = ['ADMIN', 'EDITOR_ASSISTANT', 'EDITOR', 'EDITOR_IN_CHIEF', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR', 'INTERNATIONAL_EDITOR', 'REVIEWER', 'AUTHOR'];
 
 export async function GET(
   _request: NextRequest,

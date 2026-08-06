@@ -54,7 +54,7 @@ export function Navbar() {
 
   const editorAssistantNavItems = [
     { href: '/editor-assistant', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/editor-assistant/manuscripts', label: 'Manuscripts', icon: FileText },
+    { href: '/admin/manuscripts', label: 'Manuscripts', icon: FileText },
     { href: '/editor-assistant/publish', label: 'Publish', icon: FileText },
   ];
 

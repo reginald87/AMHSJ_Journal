@@ -9,10 +9,12 @@ import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminPublish');
 
+const MANAGER_ROLES = ['ADMIN', 'EDITOR_ASSISTANT'];
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || !MANAGER_ROLES.includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

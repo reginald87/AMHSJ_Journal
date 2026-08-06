@@ -64,6 +64,8 @@ export function LoginPageContent() {
           router.push('/admin/overview');
         } else if (['EDITOR', 'DEPUTY_EDITOR_IN_CHIEF', 'ASSOCIATE_EDITOR'].includes(role)) {
           router.push('/editor');
+        } else if (role === 'EDITOR_ASSISTANT') {
+          router.push('/editor-assistant');
         } else if (role === 'REVIEWER') {
           router.push('/reviewer');
         } else {

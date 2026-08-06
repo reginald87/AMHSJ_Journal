@@ -86,13 +86,13 @@ export default function EditorAssistantDashboard() {
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <Link href="/editor-assistant/manuscripts">
+        <Link href="/admin/manuscripts">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-6 flex items-center gap-4">
               <FileText className="w-8 h-8 text-gold-500" />
               <div className="flex-1">
-                <h3 className="font-semibold text-navy-900 dark:text-white">View Manuscripts</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Browse accepted manuscripts ready for formatting</p>
+                <h3 className="font-semibold text-navy-900 dark:text-white">Manage Manuscripts</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Browse and manage all manuscripts in the editorial workflow</p>
               </div>
               <ArrowRight className="w-5 h-5 text-slate-400" />
             </CardContent>

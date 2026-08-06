@@ -6,10 +6,12 @@ import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminVolumes');
 
+const VIEWER_ROLES = ['ADMIN', 'EDITOR_ASSISTANT'];
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || !VIEWER_ROLES.includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
