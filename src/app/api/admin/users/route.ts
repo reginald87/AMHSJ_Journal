@@ -86,11 +86,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, firstName, lastName, middleName, role, affiliation, department, orcid, phone, country } = body;
 
-    if (!email || !password || !firstName || !lastName) {
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (!normalizedEmail || !password || !firstName || !lastName) {
       return NextResponse.json({ error: 'Email, password, first name, and last name are required' }, { status: 400 });
     }
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) {
       return NextResponse.json({ error: 'A user with this email already exists' }, { status: 409 });
     }
@@ -101,7 +103,7 @@ export async function POST(request: NextRequest) {
 
     const user = await prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         passwordHash,
         firstName,
         lastName,
