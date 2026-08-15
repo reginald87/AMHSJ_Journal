@@ -115,7 +115,7 @@ function RegisterPage() {
       }
 
       toast.success('Registration successful! Please check your email to verify your account.');
-      router.push('/login?verified=true');
+      router.push('/login?registered=true');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.';
       toast.error(errorMessage);

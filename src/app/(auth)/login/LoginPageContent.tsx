@@ -9,7 +9,7 @@ import { z } from 'zod';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle, Mail } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { toast } from 'sonner';
 
@@ -28,6 +28,7 @@ export function LoginPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   const verified = searchParams.get('verified');
+  const registered = searchParams.get('registered');
 
   const {
     register,
@@ -100,6 +101,12 @@ export function LoginPageContent() {
           <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400 flex items-center gap-3">
             <CheckCircle className="w-5 h-5 flex-shrink-0" />
             <p className="text-sm">Email verified successfully! You can now sign in.</p>
+          </div>
+        )}
+        {registered && !verified && (
+          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-700 dark:text-blue-400 flex items-center gap-3">
+            <Mail className="w-5 h-5 flex-shrink-0" />
+            <p className="text-sm">Registration successful! A verification email has been sent to your inbox. Please check your email and click the link to activate your account.</p>
           </div>
         )}
 
