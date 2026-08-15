@@ -21,9 +21,12 @@ export async function PUT(
     const body = await request.json();
     const { role, status, firstName, lastName, affiliation, department, orcid, phone, country, bio, password } = body;
 
+    const activating = status === 'ACTIVE';
+
     const data: Record<string, unknown> = {};
     if (role) data.role = role;
     if (status) data.status = status;
+    if (activating) data.emailVerified = new Date();
     if (firstName !== undefined) data.firstName = firstName;
     if (lastName !== undefined) data.lastName = lastName;
     if (affiliation !== undefined) data.affiliation = affiliation;
@@ -40,10 +43,18 @@ export async function PUT(
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
-    const user = await prisma.user.update({
-      where: { id },
-      data,
-      select: { id: true, email: true, firstName: true, lastName: true, role: true, status: true, affiliation: true, department: true, orcid: true, phone: true, country: true, bio: true },
+    const user = await prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id },
+        data,
+        select: { id: true, email: true, firstName: true, lastName: true, role: true, status: true, emailVerified: true, affiliation: true, department: true, orcid: true, phone: true, country: true, bio: true },
+      });
+
+      if (activating) {
+        await tx.emailVerification.deleteMany({ where: { userId: id } });
+      }
+
+      return updated;
     });
 
     return NextResponse.json(user);

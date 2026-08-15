@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Edit as EditIcon, Trash2, Plus } from 'lucide-react';
+import { Edit as EditIcon, Trash2, Plus, CheckCircle2 } from 'lucide-react';
 
 interface User {
   id: string;
@@ -79,6 +79,18 @@ export default function AdminUsersPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers();
   }, []);
+
+  const handleVerify = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ACTIVE' }),
+      });
+      if (res.ok) { toast.success('User verified and activated'); fetchUsers(); }
+      else { toast.error('Failed to verify user'); }
+    } catch { toast.error('Failed to verify user'); }
+  };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
@@ -270,6 +282,11 @@ export default function AdminUsersPage() {
                         <Button variant="ghost" size="icon" onClick={() => openEdit(u)}>
                           <EditIcon className="w-4 h-4" />
                         </Button>
+                        {u.status === 'PENDING_VERIFICATION' && (
+                          <Button variant="ghost" size="icon" onClick={() => handleVerify(u.id)} title="Verify & activate" className="text-emerald-600 hover:text-emerald-700">
+                            <CheckCircle2 className="w-4 h-4" />
+                          </Button>
+                        )}
                         <Button variant="ghost" size="icon" onClick={() => confirmDelete(u)} className="text-red-600 hover:text-red-700">
                           <Trash2 className="w-4 h-4" />
                         </Button>
