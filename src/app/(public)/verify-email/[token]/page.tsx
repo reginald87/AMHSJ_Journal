@@ -1,16 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { use, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CheckCircle, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
-function VerifyEmailPage() {
+function VerifyEmailPage({ params }: { params: Promise<{ token: string }> }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const { token } = use(params);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 

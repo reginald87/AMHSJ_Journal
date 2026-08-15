@@ -76,7 +76,7 @@ export async function usePasswordResetToken(token: string): Promise<void> {
 }
 
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
-  const verifyUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token}`;
+  const verifyUrl = `${process.env.NEXTAUTH_URL}/verify-email/${token}`;
   
   await sendEmail({
     to: email,
@@ -111,7 +111,7 @@ export async function sendVerificationEmail(email: string, token: string): Promi
 }
 
 export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password/${token}`;
   
   await sendEmail({
     to: email,

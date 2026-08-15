@@ -31,7 +31,7 @@ export async function sendEmail({
 }
 
 export function getVerificationEmailTemplate(token: string, firstName: string): { subject: string; html: string } {
-  const verifyUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token}`;
+  const verifyUrl = `${process.env.NEXTAUTH_URL}/verify-email/${token}`;
   
   return {
     subject: 'Verify your AMHSJ account',
@@ -64,7 +64,7 @@ export function getVerificationEmailTemplate(token: string, firstName: string): 
 }
 
 export function getPasswordResetEmailTemplate(token: string, firstName: string): { subject: string; html: string } {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password/${token}`;
   
   return {
     subject: 'Reset your AMHSJ password',
