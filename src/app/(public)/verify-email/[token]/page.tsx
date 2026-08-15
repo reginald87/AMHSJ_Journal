@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -13,26 +13,36 @@ function VerifyEmailPage({ params }: { params: Promise<{ token: string }> }) {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 
-  const verifyEmail = async (verificationToken: string) => {
-    try {
-      const response = await fetch(`/api/auth/verify-email?token=${verificationToken}`, {
-        method: 'POST',
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Verification failed');
-      }
-
-      setStatus('success');
-      setMessage(data.message || 'Email verified successfully!');
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Verification failed. Please try again.';
+  useEffect(() => {
+    if (!token) {
       setStatus('error');
-      setMessage(errorMessage);
+      setMessage('Invalid verification link. Please request a new one.');
+      return;
     }
-  };
+
+    const verifyEmail = async (verificationToken: string) => {
+      try {
+        const response = await fetch(`/api/auth/verify-email?token=${verificationToken}`, {
+          method: 'POST',
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Verification failed');
+        }
+
+        setStatus('success');
+        setMessage(data.message || 'Email verified successfully!');
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Verification failed. Please try again.';
+        setStatus('error');
+        setMessage(errorMessage);
+      }
+    };
+
+    verifyEmail(token);
+  }, [token]);
 
   if (status === 'loading') {
     return (
