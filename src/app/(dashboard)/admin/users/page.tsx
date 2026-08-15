@@ -45,6 +45,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -55,6 +56,7 @@ export default function AdminUsersPage() {
     phone: '', country: '', bio: '',
   });
   const [editSaving, setEditSaving] = useState(false);
+  const [editVerifying, setEditVerifying] = useState(false);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
@@ -170,6 +172,7 @@ export default function AdminUsersPage() {
 
   const filtered = users.filter(u => {
     if (filter !== 'all' && u.role !== filter) return false;
+    if (statusFilter !== 'all' && u.status !== statusFilter) return false;
     if (search) {
       const q = search.toLowerCase();
       if (!u.firstName?.toLowerCase().includes(q) && !u.lastName?.toLowerCase().includes(q) && !u.email?.toLowerCase().includes(q)) return false;
@@ -222,6 +225,16 @@ export default function AdminUsersPage() {
               <SelectItem value="EDITOR">Editors</SelectItem>
               <SelectItem value="EDITOR_ASSISTANT">Editor Assistants</SelectItem>
               <SelectItem value="ADMIN">Admins</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="PENDING_VERIFICATION">Pending</SelectItem>
+              <SelectItem value="ACTIVE">Active</SelectItem>
+              <SelectItem value="SUSPENDED">Suspended</SelectItem>
+              <SelectItem value="REJECTED">Rejected</SelectItem>
             </SelectContent>
           </Select>
           <Input placeholder="Search users..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-[250px]" />
@@ -277,19 +290,28 @@ export default function AdminUsersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-slate-500">{formatDate(u.createdAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(u)}>
-                          <EditIcon className="w-4 h-4" />
-                        </Button>
-                        {u.status === 'PENDING_VERIFICATION' && (
-                          <Button variant="ghost" size="icon" onClick={() => handleVerify(u.id)} title="Verify & activate" className="text-emerald-600 hover:text-emerald-700">
-                            <CheckCircle2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="icon" onClick={() => confirmDelete(u)} className="text-red-600 hover:text-red-700">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                     <TableCell>
+                       <div className="flex items-center gap-1">
+                         <Button variant="ghost" size="sm" onClick={() => openEdit(u)} className="text-slate-600 hover:text-navy-900">
+                           <EditIcon className="w-4 h-4 mr-1" />
+                           Edit
+                         </Button>
+                         {u.status === 'PENDING_VERIFICATION' && (
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => handleVerify(u.id)}
+                             title="Verify & activate"
+                             className="text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 font-medium"
+                           >
+                             <CheckCircle2 className="w-4 h-4 mr-1" />
+                             Verify
+                           </Button>
+                         )}
+                          <Button variant="ghost" size="sm" onClick={() => confirmDelete(u)} className="text-red-600 hover:text-red-700">
+                           <Trash2 className="w-4 h-4 mr-1" />
+                           Delete
+                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -305,23 +327,61 @@ export default function AdminUsersPage() {
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleEditSubmit} className="space-y-4 p-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="First Name" value={editForm.firstName} onChange={(e) => setEditForm({...editForm, firstName: e.target.value})} required />
-              <Input label="Last Name" value={editForm.lastName} onChange={(e) => setEditForm({...editForm, lastName: e.target.value})} required />
-              <Input label="Email" type="email" value={editForm.email} onChange={(e) => setEditForm({...editForm, email: e.target.value})} required />
-              <Input label="Affiliation" value={editForm.affiliation} onChange={(e) => setEditForm({...editForm, affiliation: e.target.value})} />
-              <Input label="Department" value={editForm.department} onChange={(e) => setEditForm({...editForm, department: e.target.value})} />
-              <Input label="ORCID" value={editForm.orcid} onChange={(e) => setEditForm({...editForm, orcid: e.target.value})} placeholder="0000-0000-0000-0000" />
-              <Input label="Phone" value={editForm.phone} onChange={(e) => setEditForm({...editForm, phone: e.target.value})} />
-              <Input label="Country" value={editForm.country} onChange={(e) => setEditForm({...editForm, country: e.target.value})} />
-            </div>
-            <Input label="Bio" value={editForm.bio} onChange={(e) => setEditForm({...editForm, bio: e.target.value})} />
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-              <Button type="submit" loading={editSaving}>Save Changes</Button>
-            </DialogFooter>
-          </form>
+           <form onSubmit={handleEditSubmit} className="space-y-4 p-4">
+             <div className="grid grid-cols-2 gap-4">
+               <Input label="First Name" value={editForm.firstName} onChange={(e) => setEditForm({...editForm, firstName: e.target.value})} required />
+               <Input label="Last Name" value={editForm.lastName} onChange={(e) => setEditForm({...editForm, lastName: e.target.value})} required />
+               <Input label="Email" type="email" value={editForm.email} onChange={(e) => setEditForm({...editForm, email: e.target.value})} required />
+               <Input label="Affiliation" value={editForm.affiliation} onChange={(e) => setEditForm({...editForm, affiliation: e.target.value})} />
+               <Input label="Department" value={editForm.department} onChange={(e) => setEditForm({...editForm, department: e.target.value})} />
+               <Input label="ORCID" value={editForm.orcid} onChange={(e) => setEditForm({...editForm, orcid: e.target.value})} placeholder="0000-0000-0000-0000" />
+               <Input label="Phone" value={editForm.phone} onChange={(e) => setEditForm({...editForm, phone: e.target.value})} />
+               <Input label="Country" value={editForm.country} onChange={(e) => setEditForm({...editForm, country: e.target.value})} />
+             </div>
+             <Input label="Bio" value={editForm.bio} onChange={(e) => setEditForm({...editForm, bio: e.target.value})} />
+             {editUser?.status === 'PENDING_VERIFICATION' && (
+               <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                 <p className="text-sm text-amber-800 dark:text-amber-200 mb-3">
+                   This user is pending verification. They cannot log in until activated.
+                 </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600"
+                   loading={editVerifying}
+                   onClick={async (e) => {
+                     e.preventDefault();
+                     if (!editUser) return;
+                     setEditVerifying(true);
+                     try {
+                       const res = await fetch(`/api/admin/users/${editUser.id}`, {
+                         method: 'PUT',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify({ status: 'ACTIVE' }),
+                       });
+                       if (res.ok) {
+                         toast.success('User verified and activated');
+                         setEditDialogOpen(false);
+                         fetchUsers();
+                       } else {
+                         toast.error('Failed to verify user');
+                       }
+                     } catch {
+                       toast.error('Failed to verify user');
+                     } finally {
+                       setEditVerifying(false);
+                     }
+                   }}
+                 >
+                   Verify & Activate User
+                 </Button>
+               </div>
+             )}
+             <DialogFooter>
+               <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+               <Button type="submit" loading={editSaving}>Save Changes</Button>
+             </DialogFooter>
+           </form>
         </DialogContent>
       </Dialog>
 
