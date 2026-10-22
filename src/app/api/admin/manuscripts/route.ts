@@ -6,6 +6,7 @@ import { Prisma, ManuscriptStatus } from '@prisma/client';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { sendEmail, getManuscriptSubmissionEmailTemplate } from '@/lib/email';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminManuscripts');
@@ -212,9 +213,26 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await sendSubmissionConfirmation(manuscript, authorEmail, authorFirstName);
+
     return NextResponse.json(manuscript, { status: 201 });
   } catch (error) {
     logger.error('Error creating manuscript', error);
     return NextResponse.json({ error: 'Failed to create manuscript' }, { status: 500 });
+  }
+}
+
+async function sendSubmissionConfirmation(
+  manuscript: { id: string; title: string },
+  email: string,
+  firstName: string
+) {
+  if (!email) return;
+
+  try {
+    const template = getManuscriptSubmissionEmailTemplate(manuscript.id, manuscript.title, firstName);
+    await sendEmail({ to: email, subject: template.subject, html: template.html });
+  } catch (e) {
+    logger.error('Failed to send submission email', e);
   }
 }

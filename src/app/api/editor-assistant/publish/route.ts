@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { join } from 'path';
 import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
+import { getPublicationEmailTemplate } from '@/lib/email';
+import { getManuscriptRecipients, notifyManuscriptAuthors } from '@/lib/manuscript-notify';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('EditorAssistantPublish');
@@ -152,9 +154,54 @@ export async function POST(request: NextRequest) {
       logger.error('Failed to create notification', notifError);
     }
 
+    await notifyPublication({
+      manuscriptId,
+      manuscriptTitle: manuscript.title,
+      doi: generatedDoi,
+      volumeLabel: volume.title || `Volume ${volume.number}`,
+      articleUrl: `${process.env.NEXTAUTH_URL}/article/${article.slug}`,
+    });
+
     return NextResponse.json(article, { status: 201 });
   } catch (error) {
     logger.error('Error publishing manuscript', error);
     return NextResponse.json({ error: 'Failed to publish manuscript' }, { status: 500 });
+  }
+}
+
+async function notifyPublication({
+  manuscriptId,
+  manuscriptTitle,
+  doi,
+  volumeLabel,
+  articleUrl,
+}: {
+  manuscriptId: string;
+  manuscriptTitle: string;
+  doi: string;
+  volumeLabel: string;
+  articleUrl: string;
+}) {
+  try {
+    const recipients = await getManuscriptRecipients(manuscriptId);
+
+    await notifyManuscriptAuthors({
+      recipients,
+      type: 'MANUSCRIPT_PUBLISHED',
+      title: 'Manuscript Published',
+      message: `Your manuscript "${manuscriptTitle}" has been published in ${volumeLabel}. DOI: ${doi}`,
+      data: { manuscriptId, doi },
+      email: (recipient) =>
+        getPublicationEmailTemplate(
+          manuscriptId,
+          manuscriptTitle,
+          recipient.firstName,
+          doi,
+          volumeLabel,
+          articleUrl
+        ),
+    });
+  } catch (error) {
+    logger.error('Failed to notify publication', error);
   }
 }

@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
           journal: { select: { name: true, shortName: true } },
           correspondingAuthor: { select: { firstName: true, lastName: true, email: true } },
           authors: { select: { firstName: true, lastName: true, email: true } },
-          assignedEditor: { select: { firstName: true, lastName: true } },
+          assignedEditor: { select: { id: true, firstName: true, lastName: true } },
           files: { select: { id: true, fileName: true, fileUrl: true, fileSize: true, mimeType: true, fileType: true, isPrimary: true, version: true } },
           reviews: { select: { id: true, status: true, decision: true } },
         },

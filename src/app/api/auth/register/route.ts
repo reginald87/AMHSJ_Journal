@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { sendEmail, getVerificationEmailTemplate } from '@/lib/email';
+import { sendEmail, getVerificationEmailTemplate, getAccountWelcomeEmailTemplate } from '@/lib/email';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { createLogger } from '@/lib/logger';
 
@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
     });
 
     await sendVerificationEmail(user, verificationToken);
+    await sendWelcomeEmail(user);
 
     return NextResponse.json({
       message: 'Registration successful. Please check your email to verify your account.',
@@ -93,13 +94,24 @@ export async function POST(request: NextRequest) {
 interface UserWithEmail {
   email: string;
   id: string;
+  firstName: string;
+  role: string;
 }
 
 async function sendVerificationEmail(user: UserWithEmail, token: string) {
   try {
-    const template = getVerificationEmailTemplate(token, '');
+    const template = getVerificationEmailTemplate(token, user.firstName);
     await sendEmail({ to: user.email, subject: template.subject, html: template.html });
   } catch (e) {
     logger.error('Failed to send verification email', e);
+  }
+}
+
+async function sendWelcomeEmail(user: UserWithEmail) {
+  try {
+    const template = getAccountWelcomeEmailTemplate(user.firstName, user.role);
+    await sendEmail({ to: user.email, subject: template.subject, html: template.html });
+  } catch (e) {
+    logger.error('Failed to send welcome email', e);
   }
 }

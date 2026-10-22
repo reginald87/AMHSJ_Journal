@@ -10,6 +10,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export async function sendEmail({
   to,
   subject,
@@ -48,7 +57,7 @@ export function getVerificationEmailTemplate(token: string, firstName: string): 
     <p style="color: #94a3b8; margin: 8px 0 0; font-size: 14px;">AMHSJ</p>
   </div>
   <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
-    <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 24px;">Welcome to AMHSJ, ${firstName}!</h2>
+    <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 24px;">Welcome to AMHSJ, ${escapeHtml(firstName)}!</h2>
     <p style="color: #475569; margin: 0 0 24px; font-size: 16px;">Thank you for registering. Please verify your email address to activate your account and access the author dashboard.</p>
     <div style="text-align: center; margin: 32px 0;">
       <a href="${verifyUrl}" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: #fbbf24; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block; border: 2px solid #fbbf24;">Verify Email Address</a>
@@ -113,14 +122,14 @@ export function getManuscriptSubmissionEmailTemplate(manuscriptId: string, title
   </div>
   <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
     <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 24px;">Manuscript Successfully Submitted</h2>
-    <p style="color: #475569; margin: 0 0 24px; font-size: 16px;">Dear ${firstName},</p>
+    <p style="color: #475569; margin: 0 0 24px; font-size: 16px;">Dear ${escapeHtml(firstName)},</p>
     <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">Your manuscript has been successfully submitted to <strong>Advances in Medicine and Health Sciences Journal</strong>.</p>
     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
-      <p style="margin: 0 0 8px; color: #0f172a; font-weight: 600;">Manuscript ID: ${manuscriptId}</p>
-      <p style="margin: 0; color: #475569;">Title: ${title}</p>
+      <p style="margin: 0 0 8px; color: #0f172a; font-weight: 600;">Manuscript ID: ${escapeHtml(manuscriptId)}</p>
+      <p style="margin: 0; color: #475569;">Title: ${escapeHtml(title)}</p>
       <p style="margin: 8px 0 0; color: #475569;">Status: <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600;">Submitted</span></p>
     </div>
-    <p style="color: #475569; margin: 24px 0 0; font-size: 16px;">You can track the progress of your manuscript in your <a href="${process.env.NEXTAUTH_URL}/dashboard/manuscripts" style="color: #0f172a; font-weight: 600;">author dashboard</a>.</p>
+    <p style="color: #475569; margin: 24px 0 0; font-size: 16px;">You will be notified by email as your manuscript is assigned to an editor, receives a decision, and is published. You can also track the progress of your manuscript in your <a href="${process.env.NEXTAUTH_URL}/dashboard/manuscripts" style="color: #0f172a; font-weight: 600;">author dashboard</a>.</p>
     <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
     <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">Advances in Medicine and Health Sciences Journal</p>
   </div>
@@ -196,20 +205,177 @@ export function getDecisionEmailTemplate(decision: string, manuscriptId: string,
   </div>
   <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
     <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 24px;">Editorial Decision</h2>
-    <p style="color: #475569; margin: 0 0 24px; font-size: 16px;">Dear ${firstName},</p>
+    <p style="color: #475569; margin: 0 0 24px; font-size: 16px;">Dear ${escapeHtml(firstName)},</p>
     <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">A decision has been made on your manuscript submitted to <strong>Advances in Medicine and Health Sciences Journal</strong>.</p>
     <div style="background: ${colors.bg}; border: 1px solid ${colors.border}; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
-      <p style="margin: 0 0 8px; color: ${colors.text}; font-weight: 600; font-size: 14px;">MANUSCRIPT ID: ${manuscriptId}</p>
-      <p style="margin: 0 0 12px; color: ${colors.text};">Title: ${title}</p>
-      <span style="background: ${colors.border}; color: ${colors.text}; padding: 8px 20px; border-radius: 9999px; font-weight: 700; font-size: 16px;">${decisionLabel}</span>
+      <p style="margin: 0 0 8px; color: ${colors.text}; font-weight: 600; font-size: 14px;">MANUSCRIPT ID: ${escapeHtml(manuscriptId)}</p>
+      <p style="margin: 0 0 12px; color: ${colors.text};">Title: ${escapeHtml(title)}</p>
+      <span style="background: ${colors.border}; color: ${colors.text}; padding: 8px 20px; border-radius: 9999px; font-weight: 700; font-size: 16px;">${escapeHtml(decisionLabel)}</span>
     </div>
     ${notesToAuthor ? `
     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
       <h3 style="color: #0f172a; margin: 0 0 12px; font-size: 16px;">Editor Comments:</h3>
-      <p style="color: #475569; margin: 0; white-space: pre-wrap;">${notesToAuthor}</p>
+      <p style="color: #475569; margin: 0; white-space: pre-wrap;">${escapeHtml(notesToAuthor)}</p>
     </div>
     ` : ''}
     <p style="color: #475569; margin: 24px 0 0; font-size: 16px;">Log in to your <a href="${process.env.NEXTAUTH_URL}/dashboard/manuscripts" style="color: #0f172a; font-weight: 600;">author dashboard</a> for next steps.</p>
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
+    <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">Advances in Medicine and Health Sciences Journal</p>
+  </div>
+</body>
+</html>
+    `,
+  };
+}
+
+export function getAccountWelcomeEmailTemplate(firstName: string, role: string): { subject: string; html: string } {
+  const dashboardUrl = `${process.env.NEXTAUTH_URL}/dashboard`;
+
+  return {
+    subject: 'Welcome to AMHSJ — your account has been created',
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+    <h1 style="color: #fbbf24; margin: 0; font-size: 28px; font-weight: 700;">Advances in Medicine and Health Sciences Journal</h1>
+    <p style="color: #94a3b8; margin: 8px 0 0; font-size: 14px;">AMHSJ</p>
+  </div>
+  <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
+    <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 24px;">Welcome, ${escapeHtml(firstName)}!</h2>
+    <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">Your <strong>${escapeHtml(role.toLowerCase())}</strong> account on <strong>Advances in Medicine and Health Sciences Journal</strong> has been created successfully.</p>
+    <p style="color: #475569; margin: 0 0 24px; font-size: 16px;">Please check your inbox for a verification email to activate your account. Once verified you can submit manuscripts and track every editorial decision from your dashboard.</p>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${dashboardUrl}" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: #fbbf24; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block; border: 2px solid #fbbf24;">Go to Dashboard</a>
+    </div>
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
+    <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">Advances in Medicine and Health Sciences Journal</p>
+  </div>
+</body>
+</html>
+    `,
+  };
+}
+
+export function getEditorAssignedEmailTemplate(
+  manuscriptId: string,
+  title: string,
+  firstName: string,
+  editorName: string
+): { subject: string; html: string } {
+  return {
+    subject: `An Editor Has Been Assigned to Your Manuscript: ${title}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+    <h1 style="color: #fbbf24; margin: 0; font-size: 28px; font-weight: 700;">Advances in Medicine and Health Sciences Journal</h1>
+  </div>
+  <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
+    <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 24px;">Editor Assigned to Your Manuscript</h2>
+    <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">Dear ${escapeHtml(firstName)},</p>
+    <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">An editor has been assigned to your manuscript submitted to <strong>Advances in Medicine and Health Sciences Journal</strong>. You will be notified at every stage of the editorial process.</p>
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
+      <p style="margin: 0 0 8px; color: #0f172a; font-weight: 600;">Manuscript ID: ${escapeHtml(manuscriptId)}</p>
+      <p style="margin: 0 0 8px; color: #475569;">Title: ${escapeHtml(title)}</p>
+      <p style="margin: 0; color: #475569;">Handling Editor: <strong>${escapeHtml(editorName)}</strong></p>
+      <p style="margin: 8px 0 0; color: #475569;">Status: <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600;">Under Editorial Review</span></p>
+    </div>
+    <p style="color: #475569; margin: 24px 0 0; font-size: 16px;">Log in to your <a href="${process.env.NEXTAUTH_URL}/dashboard/manuscripts" style="color: #0f172a; font-weight: 600;">author dashboard</a> to follow the progress of your manuscript.</p>
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
+    <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">Advances in Medicine and Health Sciences Journal</p>
+  </div>
+</body>
+</html>
+    `,
+  };
+}
+
+export function getEditorAssignmentNoticeEmailTemplate(
+  manuscriptId: string,
+  title: string,
+  editorFirstName: string,
+  authorName: string
+): { subject: string; html: string } {
+  return {
+    subject: `Manuscript Assigned to You: ${title}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+    <h1 style="color: #fbbf24; margin: 0; font-size: 28px; font-weight: 700;">Advances in Medicine and Health Sciences Journal</h1>
+  </div>
+  <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
+    <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 24px;">Manuscript Assigned to You</h2>
+    <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">Dear Dr. ${escapeHtml(editorFirstName)},</p>
+    <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">You have been assigned as the handling editor for the following manuscript submitted to <strong>Advances in Medicine and Health Sciences Journal</strong>.</p>
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
+      <p style="margin: 0 0 8px; color: #0f172a; font-weight: 600;">Manuscript ID: ${escapeHtml(manuscriptId)}</p>
+      <p style="margin: 0 0 8px; color: #475569;">Title: ${escapeHtml(title)}</p>
+      <p style="margin: 0; color: #475569;">Submitted by: ${escapeHtml(authorName)}</p>
+    </div>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${process.env.NEXTAUTH_URL}/editor/manuscripts" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: #fbbf24; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block; border: 2px solid #fbbf24;">Open Editorial Dashboard</a>
+    </div>
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
+    <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">Advances in Medicine and Health Sciences Journal</p>
+  </div>
+</body>
+</html>
+    `,
+  };
+}
+
+export function getPublicationEmailTemplate(
+  manuscriptId: string,
+  title: string,
+  firstName: string,
+  doi: string,
+  volumeLabel: string,
+  articleUrl: string
+): { subject: string; html: string } {
+  return {
+    subject: `Your Manuscript Has Been Published: ${title}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+    <h1 style="color: #fbbf24; margin: 0; font-size: 28px; font-weight: 700;">Advances in Medicine and Health Sciences Journal</h1>
+  </div>
+  <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
+    <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 24px;">Congratulations — Your Manuscript Is Published</h2>
+    <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">Dear ${escapeHtml(firstName)},</p>
+    <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">Your manuscript has been published in <strong>Advances in Medicine and Health Sciences Journal</strong>.</p>
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
+      <p style="margin: 0 0 8px; color: #0f172a; font-weight: 600;">Manuscript ID: ${escapeHtml(manuscriptId)}</p>
+      <p style="margin: 0 0 8px; color: #475569;">Title: ${escapeHtml(title)}</p>
+      <p style="margin: 0 0 8px; color: #475569;">Issue: ${escapeHtml(volumeLabel)}</p>
+      <p style="margin: 0; color: #475569;">DOI: <strong>${escapeHtml(doi)}</strong></p>
+      <p style="margin: 8px 0 0; color: #475569;">Status: <span style="background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600;">Published</span></p>
+    </div>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${articleUrl}" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: #fbbf24; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block; border: 2px solid #fbbf24;">View Your Article</a>
+    </div>
+    <p style="color: #475569; margin: 24px 0 0; font-size: 16px;">Thank you for publishing with us. You can manage your submission from your <a href="${process.env.NEXTAUTH_URL}/dashboard/manuscripts" style="color: #0f172a; font-weight: 600;">author dashboard</a>.</p>
     <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
     <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">Advances in Medicine and Health Sciences Journal</p>
   </div>

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { sendEmail, getDecisionEmailTemplate } from '@/lib/email';
+import { getDecisionEmailTemplate } from '@/lib/email';
+import { getManuscriptRecipients, notifyManuscriptAuthors } from '@/lib/manuscript-notify';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('EditorialDecisions');
@@ -70,34 +71,25 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const emailTemplate = getDecisionEmailTemplate(
-        decision,
-        manuscript.id,
-        manuscript.title,
-        manuscript.correspondingAuthor.firstName,
-        notesToAuthor
-      );
-      await sendEmail({
-        to: manuscript.correspondingAuthor.email,
-        subject: emailTemplate.subject,
-        html: emailTemplate.html,
+      const recipients = await getManuscriptRecipients(manuscriptId);
+
+      await notifyManuscriptAuthors({
+        recipients,
+        type: 'MANUSCRIPT_DECISION',
+        title: decision === 'ACCEPT' ? 'Manuscript Accepted' : 'Manuscript Decision',
+        message: `A decision has been made on your manuscript "${manuscript.title}". Decision: ${decision.replace('_', ' ')}.`,
+        data: { manuscriptId, decision },
+        email: (recipient) =>
+          getDecisionEmailTemplate(
+            decision,
+            manuscriptId,
+            manuscript.title,
+            recipient.firstName,
+            notesToAuthor
+          ),
       });
     } catch (emailError) {
-      logger.error('Failed to send decision email', emailError);
-    }
-
-    try {
-      await prisma.notification.create({
-        data: {
-          userId: manuscript.correspondingAuthorId,
-          type: 'MANUSCRIPT_DECISION',
-          title: 'Manuscript Decision',
-          message: `A decision has been made on your manuscript "${manuscript.title}". Decision: ${decision.replace('_', ' ')}.`,
-          data: JSON.stringify({ manuscriptId, decision }),
-        },
-      });
-    } catch (notifError) {
-      logger.error('Failed to create notification', notifError);
+      logger.error('Failed to notify decision', emailError);
     }
 
     return NextResponse.json(editorialDecision, { status: 201 });

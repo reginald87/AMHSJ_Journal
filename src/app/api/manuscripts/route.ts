@@ -6,6 +6,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { sendEmail, getManuscriptSubmissionEmailTemplate } from '@/lib/email';
+import { createNotification } from '@/lib/notify';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { createLogger } from '@/lib/logger';
 
@@ -155,7 +156,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await sendSubmissionConfirmation(manuscript, session.user.email);
+    await sendSubmissionConfirmation(manuscript, session.user.email, session.user.firstName);
+
+    await createNotification({
+      userId: session.user.id,
+      type: 'MANUSCRIPT_SUBMITTED',
+      title: 'Manuscript Submitted',
+      message: `Your manuscript "${manuscript.title}" has been submitted and is awaiting editorial assignment.`,
+      data: JSON.stringify({ manuscriptId: manuscript.id }),
+    });
 
     return NextResponse.json({ 
       manuscriptId: manuscript.id,
@@ -170,11 +179,12 @@ export async function POST(request: NextRequest) {
 
 interface ManuscriptWithId {
   id: string;
+  title: string;
 }
 
-async function sendSubmissionConfirmation(manuscript: ManuscriptWithId, email: string) {
+async function sendSubmissionConfirmation(manuscript: ManuscriptWithId, email: string, firstName: string) {
   try {
-    const template = getManuscriptSubmissionEmailTemplate(manuscript.id, 'Your submitted manuscript', 'Author');
+    const template = getManuscriptSubmissionEmailTemplate(manuscript.id, manuscript.title, firstName);
     await sendEmail({ to: email, subject: template.subject, html: template.html });
   } catch (e) {
     logger.error('Failed to send submission email', e);

@@ -39,10 +39,10 @@ interface Manuscript {
 
 interface Editor {
   id: string;
-  userId: string;
-  user?: { firstName: string; lastName: string };
+  firstName: string;
+  lastName: string;
+  email: string;
   role: string;
-  isActive: boolean;
 }
 
 interface VolumeData {
@@ -75,6 +75,7 @@ export default function AdminManuscriptsPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editAbstract, setEditAbstract] = useState('');
   const [editKeywords, setEditKeywords] = useState('');
+  const [decisionNotes, setDecisionNotes] = useState('');
   const [editors, setEditors] = useState<Editor[]>([]);
   const [detailSaving, setDetailSaving] = useState(false);
 
@@ -107,11 +108,11 @@ export default function AdminManuscriptsPage() {
 
   const fetchEditors = async () => {
     try {
-      const res = await fetch('/api/admin/editorial-board');
+      const res = await fetch('/api/editorial/editors');
       if (!res.ok) return;
       const data = await res.json();
       const list = Array.isArray(data) ? data : (data.editors || []);
-      setEditors(list.filter((e: Editor) => e.isActive));
+      setEditors(list);
     } catch { /* silently fail */ }
   };
 
@@ -134,6 +135,7 @@ export default function AdminManuscriptsPage() {
     setEditTitle(ms.title || '');
     setEditAbstract(ms.abstract || '');
     setEditKeywords(ms.keywords || '');
+    setDecisionNotes('');
     setDetailOpen(true);
     fetchEditors();
   };
@@ -161,6 +163,7 @@ export default function AdminManuscriptsPage() {
         keywords: editKeywords,
       };
       if (assignedEditorId) body.assignedEditorId = assignedEditorId;
+      if (decisionNotes) body.notesToAuthor = decisionNotes;
       const res = await fetch(`/api/admin/manuscripts/${selected.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -455,12 +458,22 @@ export default function AdminManuscriptsPage() {
                     <SelectContent>
                       <SelectItem value="">No editor</SelectItem>
                       {editors.map((e: Editor) => (
-                        <SelectItem key={e.id} value={e.userId || e.id}>
-                          {e.user?.firstName} {e.user?.lastName} — {e.role?.replace(/_/g, ' ')}
+                        <SelectItem key={e.id} value={e.id}>
+                          {e.firstName} {e.lastName} — {e.role?.replace(/_/g, ' ')}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <label className="font-medium text-slate-500 dark:text-slate-400 text-sm block mb-1">Decision Notes to Author</label>
+                  <textarea
+                    value={decisionNotes}
+                    onChange={e => setDecisionNotes(e.target.value)}
+                    rows={3}
+                    placeholder="Included in the decision email sent to the author..."
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-navy-700 dark:bg-navy-900 dark:text-slate-100 resize-y"
+                  />
                 </div>
               </div>
             </div>

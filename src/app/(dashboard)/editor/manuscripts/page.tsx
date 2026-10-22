@@ -39,14 +39,16 @@ interface Manuscript {
   articleType: string;
   submittedAt: string;
   correspondingAuthor?: { firstName: string; lastName: string };
-  assignedEditor?: { firstName: string; lastName: string };
+  assignedEditor?: { id: string; firstName: string; lastName: string };
   decisionNotes?: string;
   files?: { id: string; fileName: string; fileUrl: string; fileSize: number; mimeType: string; fileType: string; isPrimary: boolean; version: number }[];
 }
 
-interface Reviewer {
+interface Editor {
   id: string;
-  user: { firstName: string; lastName: string; email: string };
+  firstName: string;
+  lastName: string;
+  email: string;
   role: string;
 }
 
@@ -71,7 +73,7 @@ export default function EditorManuscriptsPage() {
   const [decisionNotes, setDecisionNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const [reviewers, setReviewers] = useState<Reviewer[]>([]);
+  const [editors, setEditors] = useState<Editor[]>([]);
 
   const fetchManuscripts = useCallback(async () => {
     try {
@@ -92,19 +94,19 @@ export default function EditorManuscriptsPage() {
   const openDialog = async (m: Manuscript) => {
     setSelected(m);
     setNewStatus(m.status);
-    setAssignedEditorId(m.assignedEditor ? '' : '');
+    setAssignedEditorId(m.assignedEditor?.id || '');
     setDecisionNotes(m.decisionNotes || '');
     setDialogOpen(true);
 
-    if (reviewers.length === 0) {
+    if (editors.length === 0) {
       try {
-        const res = await fetch('/api/editorial/reviewers');
+        const res = await fetch('/api/editorial/editors');
         if (res.ok) {
           const data = await res.json();
-          setReviewers(Array.isArray(data) ? data : []);
+          setEditors(Array.isArray(data) ? data : []);
         }
       } catch {
-        /* reviewers load is non-critical */
+        /* editors load is non-critical */
       }
     }
   };
@@ -125,12 +127,15 @@ export default function EditorManuscriptsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error('Failed');
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Failed');
+      }
       toast.success('Manuscript updated successfully');
       setDialogOpen(false);
       fetchManuscripts();
-    } catch {
-      toast.error('Failed to update manuscript');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to update manuscript');
     } finally {
       setSaving(false);
     }
@@ -285,7 +290,7 @@ export default function EditorManuscriptsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              {reviewers.length > 0 && (
+              {editors.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-slate-500 mb-1">Assign Editor</p>
                   <Select value={assignedEditorId} onValueChange={setAssignedEditorId}>
@@ -294,13 +299,18 @@ export default function EditorManuscriptsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">No change</SelectItem>
-                      {reviewers.map((r) => (
-                        <SelectItem key={r.id} value={r.id}>
-                          {r.user.firstName} {r.user.lastName}
+                      {editors.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          {e.firstName} {e.lastName} — {e.role?.replace(/_/g, ' ')}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  {selected.assignedEditor && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Currently assigned to {selected.assignedEditor.firstName} {selected.assignedEditor.lastName}
+                    </p>
+                  )}
                 </div>
               )}
               <div>
