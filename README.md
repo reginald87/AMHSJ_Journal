@@ -82,8 +82,24 @@ In Terminal or via the Node.js app's **Run npm** button:
 
 ```bash
 npm install
+npx prisma generate
 npx prisma db push
 npm run build
+```
+
+`npm run build` also runs `prisma generate` first, so the client is always regenerated before `next build`.
+
+### Deploying updates (PM2)
+
+```bash
+cd /var/www/journal
+git pull
+npm install
+npx prisma generate
+npx prisma db push
+npm run build
+pm2 restart journal
+pm2 status
 ```
 
 ### 5. Create admin account
