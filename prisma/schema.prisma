@@ -312,6 +312,7 @@ model Manuscript {
   correspondingAuthorId String
   currentVersion        Int                 @default(1)
   doi                   String?             @unique
+  fileHash              String?
   submittedVersion      String?
   acceptedVersion       String?
   publishedVersion      String?
@@ -335,6 +336,7 @@ model Manuscript {
   @@index([correspondingAuthorId])
   @@index([assignedEditorId])
   @@index([status])
+  @@index([fileHash])
 }
 
 model ManuscriptAuthor {

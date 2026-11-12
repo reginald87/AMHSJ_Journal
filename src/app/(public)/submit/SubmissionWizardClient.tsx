@@ -272,14 +272,17 @@ export function SubmissionWizard({ journalSettings }: { journalSettings: Journal
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Submission failed');
+      const result = await response.json().catch(() => ({}));
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.error || 'Submission failed');
+      }
+
       reset();
       router.push(`/dashboard/manuscripts?submitted=true`);
     } catch (error) {
       console.error('Submission error:', error);
-      alert('Submission failed. Please try again.');
+      alert(error instanceof Error ? error.message : 'Submission failed. Please try again.');
     }
   };
 

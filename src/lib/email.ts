@@ -228,6 +228,124 @@ export function getDecisionEmailTemplate(decision: string, manuscriptId: string,
   };
 }
 
+export function getManuscriptStatusEmailTemplate(
+  status: string,
+  manuscriptId: string,
+  title: string,
+  firstName: string,
+  options: { notes?: string; doi?: string; volumeLabel?: string; articleUrl?: string } = {}
+): { subject: string; html: string } {
+  const statusMeta: Record<
+    string,
+    { label: string; heading: string; intro: string; bg: string; text: string; border: string }
+  > = {
+    SUBMITTED: {
+      label: 'Submitted',
+      heading: 'Manuscript Successfully Submitted',
+      intro: 'Your manuscript has been successfully submitted and is awaiting editorial assignment.',
+      bg: '#dbeafe',
+      text: '#1e40af',
+      border: '#93c5fd',
+    },
+    UNDER_REVIEW: {
+      label: 'Under Review',
+      heading: 'Manuscript Under Review',
+      intro: 'Your manuscript is now under review. The editorial team will contact you when a decision is available.',
+      bg: '#e0e7ff',
+      text: '#3730a3',
+      border: '#a5b4fc',
+    },
+    UNDER_REVISION: {
+      label: 'Revision Required',
+      heading: 'Revision Requested',
+      intro: 'Your manuscript requires revision before it can proceed. Please review the editor comments and submit your revised manuscript.',
+      bg: '#fef3c7',
+      text: '#92400e',
+      border: '#fcd34d',
+    },
+    ACCEPTED: {
+      label: 'Accepted',
+      heading: 'Manuscript Accepted',
+      intro: 'Your manuscript has been accepted for publication. The production team will contact you regarding the next steps.',
+      bg: '#dcfce7',
+      text: '#166534',
+      border: '#86efac',
+    },
+    REJECTED: {
+      label: 'Rejected',
+      heading: 'Manuscript Decision',
+      intro: 'A decision has been made on your manuscript. Please review the editor comments below.',
+      bg: '#fee2e2',
+      text: '#991b1b',
+      border: '#fca5a5',
+    },
+    PUBLISHED: {
+      label: 'Published',
+      heading: 'Your Manuscript Is Published',
+      intro: 'Your manuscript has been published in Advances in Medicine and Health Sciences Journal.',
+      bg: '#dcfce7',
+      text: '#166534',
+      border: '#86efac',
+    },
+    WITHDRAWN: {
+      label: 'Withdrawn',
+      heading: 'Manuscript Withdrawn',
+      intro: 'Your manuscript has been withdrawn from the editorial process.',
+      bg: '#f1f5f9',
+      text: '#334155',
+      border: '#cbd5e1',
+    },
+  };
+
+  const meta = statusMeta[status] || statusMeta.SUBMITTED;
+  const subject = `${meta.heading}: ${title}`;
+  const doi = options.doi ? escapeHtml(options.doi) : null;
+  const volumeLabel = options.volumeLabel ? escapeHtml(options.volumeLabel) : null;
+  const articleUrl = options.articleUrl || `${process.env.NEXTAUTH_URL}/dashboard/manuscripts`;
+
+  return {
+    subject,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+    <h1 style="color: #fbbf24; margin: 0; font-size: 28px; font-weight: 700;">Advances in Medicine and Health Sciences Journal</h1>
+  </div>
+  <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
+    <h2 style="color: #0f172a; margin: 0 0 16px; font-size: 24px;">${meta.heading}</h2>
+    <p style="color: #475569; margin: 0 0 24px; font-size: 16px;">Dear ${escapeHtml(firstName)},</p>
+    <p style="color: #475569; margin: 0 0 16px; font-size: 16px;">${meta.intro}</p>
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
+      <p style="margin: 0 0 8px; color: #0f172a; font-weight: 600;">Manuscript ID: ${escapeHtml(manuscriptId)}</p>
+      <p style="margin: 0 0 8px; color: #475569;">Title: ${escapeHtml(title)}</p>
+      ${volumeLabel ? `<p style="margin: 0 0 8px; color: #475569;">Issue: ${volumeLabel}</p>` : ''}
+      ${doi ? `<p style="margin: 0 0 8px; color: #475569;">DOI: <strong>${doi}</strong></p>` : ''}
+      <p style="margin: 0; color: #475569;">Status: <span style="background: ${meta.bg}; color: ${meta.text}; border: 1px solid ${meta.border}; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600;">${meta.label}</span></p>
+    </div>
+    ${options.notes ? `
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
+      <h3 style="color: #0f172a; margin: 0 0 12px; font-size: 16px;">Editor Comments:</h3>
+      <p style="color: #475569; margin: 0; white-space: pre-wrap;">${escapeHtml(options.notes)}</p>
+    </div>
+    ` : ''}
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${articleUrl}" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: #fbbf24; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block; border: 2px solid #fbbf24;">${status === 'PUBLISHED' ? 'View Your Article' : 'View Manuscript'}</a>
+    </div>
+    <p style="color: #475569; margin: 24px 0 0; font-size: 16px;">You can track the progress of your manuscript from your <a href="${process.env.NEXTAUTH_URL}/dashboard/manuscripts" style="color: #0f172a; font-weight: 600;">author dashboard</a>.</p>
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
+    <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">Advances in Medicine and Health Sciences Journal</p>
+  </div>
+</body>
+</html>
+    `,
+  };
+}
+
 export function getAccountWelcomeEmailTemplate(firstName: string, role: string): { subject: string; html: string } {
   const dashboardUrl = `${process.env.NEXTAUTH_URL}/dashboard`;
 

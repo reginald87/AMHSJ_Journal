@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { Prisma, ManuscriptStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { sendEmail, getManuscriptSubmissionEmailTemplate } from '@/lib/email';
+import { createHash } from 'crypto';
+import { findDuplicateManuscript } from '@/lib/manuscript-duplicate';
+import { notifyManuscriptStatusChange, type ManuscriptStatus } from '@/lib/manuscript-notify';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('AdminManuscripts');
@@ -158,6 +160,32 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    let manuscriptFileBuffer: Buffer | null = null;
+    let manuscriptFileHash: string | null = null;
+    let manuscriptFileMime = '';
+
+    if (manuscriptFile && manuscriptFile.size > 0) {
+      const bytes = await manuscriptFile.arrayBuffer();
+      manuscriptFileBuffer = Buffer.from(bytes);
+      manuscriptFileHash = createHash('sha256').update(manuscriptFileBuffer).digest('hex');
+      manuscriptFileMime = manuscriptFile.type;
+    }
+
+    const duplicate = await findDuplicateManuscript({
+      title,
+      fileHash: manuscriptFileHash,
+      authorId,
+      authorEmails: [authorEmail],
+    });
+
+    if (duplicate) {
+      const error =
+        duplicate.reason === 'file'
+          ? `A manuscript with this file has already been submitted (manuscript ID: ${duplicate.id}).`
+          : `A manuscript with this title already exists for this author (manuscript ID: ${duplicate.id}).`;
+      return NextResponse.json({ error, manuscriptId: duplicate.id }, { status: 409 });
+    }
+
     const uploadDir = join(process.cwd(), 'uploads', 'manuscripts');
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
@@ -166,19 +194,15 @@ export async function POST(request: NextRequest) {
     let manuscriptFileUrl = '';
     let manuscriptFileName = '';
     let manuscriptFileSize = 0;
-    let manuscriptFileMime = '';
 
-    if (manuscriptFile && manuscriptFile.size > 0) {
-      const bytes = await manuscriptFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+    if (manuscriptFile && manuscriptFileBuffer) {
       const timestamp = Date.now();
       const filename = `${timestamp}-${manuscriptFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
       const filepath = join(uploadDir, filename);
-      await writeFile(filepath, buffer);
+      await writeFile(filepath, manuscriptFileBuffer);
       manuscriptFileUrl = `/api/uploads/manuscripts/${filename}`;
       manuscriptFileName = manuscriptFile.name;
-      manuscriptFileSize = buffer.length;
-      manuscriptFileMime = manuscriptFile.type;
+      manuscriptFileSize = manuscriptFileBuffer.length;
     }
 
     const manuscriptData: Prisma.ManuscriptCreateInput = {
@@ -189,6 +213,7 @@ export async function POST(request: NextRequest) {
       articleType,
       section: section || null,
       status: (status as ManuscriptStatus) || 'SUBMITTED',
+      fileHash: manuscriptFileHash,
       correspondingAuthor: { connect: { id: authorId } },
       submittedAt: new Date(),
       authors: {
@@ -239,26 +264,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    await sendSubmissionConfirmation(manuscript, authorEmail, authorFirstName);
+    await notifyManuscriptStatusChange({
+      manuscriptId: manuscript.id,
+      manuscriptTitle: manuscript.title,
+      status: ((status as ManuscriptStatus) || 'SUBMITTED') as ManuscriptStatus,
+    });
 
     return NextResponse.json(manuscript, { status: 201 });
   } catch (error) {
     logger.error('Error creating manuscript', error);
     return NextResponse.json({ error: 'Failed to create manuscript' }, { status: 500 });
-  }
-}
-
-async function sendSubmissionConfirmation(
-  manuscript: { id: string; title: string },
-  email: string,
-  firstName: string
-) {
-  if (!email) return;
-
-  try {
-    const template = getManuscriptSubmissionEmailTemplate(manuscript.id, manuscript.title, firstName);
-    await sendEmail({ to: email, subject: template.subject, html: template.html });
-  } catch (e) {
-    logger.error('Failed to send submission email', e);
   }
 }

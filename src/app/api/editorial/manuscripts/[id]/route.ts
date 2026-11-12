@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { sendEmail, getDecisionEmailTemplate, getEditorAssignedEmailTemplate, getEditorAssignmentNoticeEmailTemplate } from '@/lib/email';
+import { sendEmail, getEditorAssignedEmailTemplate, getEditorAssignmentNoticeEmailTemplate } from '@/lib/email';
 import { resolveAssignedEditor, type AssignableEditor } from '@/lib/editor-assignment';
-import { getManuscriptRecipients, notifyManuscriptAuthors } from '@/lib/manuscript-notify';
+import {
+  getManuscriptRecipients,
+  notifyManuscriptAuthors,
+  notifyManuscriptStatusChange,
+  type ManuscriptStatus,
+} from '@/lib/manuscript-notify';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('EditorialManuscript');
@@ -103,13 +108,11 @@ export async function PUT(
     }
 
     if (statusChanged) {
-      const decisionValue = DECISION_BY_STATUS[status] || 'MINOR_REVISION';
-
-      await notifyDecision({
+      await notifyManuscriptStatusChange({
         manuscriptId: id,
         manuscriptTitle: manuscript.title,
-        decision: decisionValue,
-        status,
+        status: status as ManuscriptStatus,
+        decision: DECISION_BY_STATUS[status],
         notesToAuthor,
       });
     }
@@ -169,32 +172,4 @@ async function notifyEditorAssigned({
   }
 }
 
-async function notifyDecision({
-  manuscriptId,
-  manuscriptTitle,
-  decision,
-  status,
-  notesToAuthor,
-}: {
-  manuscriptId: string;
-  manuscriptTitle: string;
-  decision: 'ACCEPT' | 'MINOR_REVISION' | 'MAJOR_REVISION' | 'REJECT';
-  status: string;
-  notesToAuthor?: string;
-}) {
-  try {
-    const recipients = await getManuscriptRecipients(manuscriptId);
 
-    await notifyManuscriptAuthors({
-      recipients,
-      type: 'MANUSCRIPT_DECISION',
-      title: decision === 'ACCEPT' ? 'Manuscript Accepted' : 'Manuscript Decision',
-      message: `A decision has been made on your manuscript "${manuscriptTitle}". Status: ${status}.`,
-      data: { manuscriptId, decision: status },
-      email: (recipient) =>
-        getDecisionEmailTemplate(decision, manuscriptId, manuscriptTitle, recipient.firstName, notesToAuthor),
-    });
-  } catch (error) {
-    logger.error('Failed to notify decision', error);
-  }
-}

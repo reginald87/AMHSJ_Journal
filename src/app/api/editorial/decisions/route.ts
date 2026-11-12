@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { getDecisionEmailTemplate } from '@/lib/email';
-import { getManuscriptRecipients, notifyManuscriptAuthors } from '@/lib/manuscript-notify';
+import { notifyManuscriptStatusChange, type ManuscriptDecision, type ManuscriptStatus } from '@/lib/manuscript-notify';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('EditorialDecisions');
@@ -70,27 +69,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    try {
-      const recipients = await getManuscriptRecipients(manuscriptId);
-
-      await notifyManuscriptAuthors({
-        recipients,
-        type: 'MANUSCRIPT_DECISION',
-        title: decision === 'ACCEPT' ? 'Manuscript Accepted' : 'Manuscript Decision',
-        message: `A decision has been made on your manuscript "${manuscript.title}". Decision: ${decision.replace('_', ' ')}.`,
-        data: { manuscriptId, decision },
-        email: (recipient) =>
-          getDecisionEmailTemplate(
-            decision,
-            manuscriptId,
-            manuscript.title,
-            recipient.firstName,
-            notesToAuthor
-          ),
-      });
-    } catch (emailError) {
-      logger.error('Failed to notify decision', emailError);
-    }
+    await notifyManuscriptStatusChange({
+      manuscriptId,
+      manuscriptTitle: manuscript.title,
+      status: statusMap[decision] as ManuscriptStatus,
+      decision: decision as ManuscriptDecision,
+      notesToAuthor,
+    });
 
     return NextResponse.json(editorialDecision, { status: 201 });
   } catch (error) {
