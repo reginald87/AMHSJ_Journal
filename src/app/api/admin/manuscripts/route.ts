@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Prisma, ManuscriptStatus } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -106,8 +107,9 @@ export async function POST(request: NextRequest) {
     let authorAffiliation = '';
 
     if (correspondingAuthorEmail) {
+      const normalizedEmail = correspondingAuthorEmail.toLowerCase().trim();
       const existingUser = await prisma.user.findUnique({
-        where: { email: correspondingAuthorEmail },
+        where: { email: normalizedEmail },
         select: { id: true, firstName: true, lastName: true, email: true, affiliation: true },
       });
       if (existingUser) {
@@ -117,7 +119,31 @@ export async function POST(request: NextRequest) {
         authorEmail = existingUser.email;
         authorAffiliation = existingUser.affiliation || '';
       } else {
-        return NextResponse.json({ error: `No user found with email "${correspondingAuthorEmail}". Create the user account first.` }, { status: 400 });
+        if (!correspondingAuthorFirstName?.trim() || !correspondingAuthorLastName?.trim()) {
+          return NextResponse.json(
+            { error: 'First name and last name are required to create the corresponding author account.' },
+            { status: 400 }
+          );
+        }
+
+        const newAuthor = await prisma.user.create({
+          data: {
+            email: normalizedEmail,
+            passwordHash: await bcrypt.hash('password123', 12),
+            firstName: correspondingAuthorFirstName.trim(),
+            lastName: correspondingAuthorLastName.trim(),
+            role: 'AUTHOR',
+            status: 'ACTIVE',
+            emailVerified: new Date(),
+          },
+          select: { id: true, firstName: true, lastName: true, email: true, affiliation: true },
+        });
+
+        authorId = newAuthor.id;
+        authorFirstName = newAuthor.firstName;
+        authorLastName = newAuthor.lastName;
+        authorEmail = newAuthor.email;
+        authorAffiliation = newAuthor.affiliation || '';
       }
     } else {
       const adminUser = await prisma.user.findUnique({
