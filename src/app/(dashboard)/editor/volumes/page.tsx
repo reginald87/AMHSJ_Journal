@@ -11,7 +11,7 @@ interface Volume {
   year: number;
   title: string | null;
   isPublished: boolean;
-  articles: { id: string }[];
+  _count: { articles: number };
 }
 
 export default function EditorVolumesPage() {
@@ -47,7 +47,7 @@ export default function EditorVolumesPage() {
                   <TableCell className="font-bold text-navy-900 dark:text-white">Vol. {v.number}</TableCell>
                   <TableCell className="text-slate-600 dark:text-slate-400">{v.year}</TableCell>
                   <TableCell className="font-medium text-navy-900 dark:text-white">{v.title || '—'}</TableCell>
-                  <TableCell className="text-slate-600 dark:text-slate-400">{v.articles?.length || 0}</TableCell>
+                  <TableCell className="text-slate-600 dark:text-slate-400">{v._count?.articles ?? 0}</TableCell>
                   <TableCell><Badge variant={v.isPublished ? 'success' : 'warning'}>{v.isPublished ? 'Published' : 'Draft'}</Badge></TableCell>
                 </TableRow>
               ))}

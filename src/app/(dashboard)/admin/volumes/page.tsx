@@ -18,7 +18,7 @@ interface Volume {
   description: string | null;
   coverImage: string | null;
   isPublished: boolean;
-  articles: { id: string }[];
+  _count: { articles: number };
 }
 
 interface FormData {
@@ -135,7 +135,7 @@ export default function AdminVolumesPage() {
                     <TableCell className="font-bold text-navy-900 dark:text-white">Vol. {vol.number}</TableCell>
                     <TableCell className="text-slate-600 dark:text-slate-400">{vol.year}</TableCell>
                     <TableCell className="font-medium text-navy-900 dark:text-white">{vol.title || '—'}</TableCell>
-                    <TableCell className="text-slate-600 dark:text-slate-400">{vol.articles?.length || 0}</TableCell>
+                    <TableCell className="text-slate-600 dark:text-slate-400">{vol._count?.articles ?? 0}</TableCell>
                     <TableCell><Badge variant={vol.isPublished ? 'success' : 'warning'}>{vol.isPublished ? 'Published' : 'Draft'}</Badge></TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
